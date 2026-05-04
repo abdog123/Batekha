@@ -49,11 +49,12 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
     }).finally(() => { regBtn.innerText = 'إنشاء حساب'; regBtn.disabled = false; });
 });
 
-// تسجيل الدخول (تم التعديل هنا لحفظ الهاتف)
+// تسجيل الدخول (الكود المعدل والنهائي)
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const loginBtn = document.getElementById('loginBtn');
-    const phone = cleanPhone(document.getElementById('logPhone').value);
+    const phoneInput = document.getElementById('logPhone').value;
+    const phone = cleanPhone(phoneInput);
     const pass = document.getElementById('logPass').value;
 
     loginBtn.innerText = '⏳ جاري التحقق...';
@@ -63,29 +64,43 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     .then(res => res.json())
     .then(response => {
         if (response.result === "found") {
-            // --- التعديل الجوهري هنا ---
+            
+            // 1. تجميع البيانات وحفظ رقم الهاتف (السر في السطر ده)
             const studentData = {
                 name: response.name,
-                phone: response.phone, // حفظ الرقم ليعمل نظام الأصدقاء
+                phone: response.phone, // السطر ده هو اللي هيحل مشكلة الـ undefined
                 year: response.year,
                 spec: response.spec
             };
+            
+            // 2. الحفظ في ذاكرة المتصفح (localStorage)
             localStorage.setItem('activeStudent', JSON.stringify(studentData));
-            // --------------------------
+            
+            // 3. حفظ الرقم بشكل منفصل لزيادة الأمان والربط بساحة التحدي
+            localStorage.setItem('userPhone', response.phone);
 
             Swal.fire({
                 icon: 'success',
-                title: 'مرحباً!',
+                title: 'مرحباً بك!',
                 text: `أهلاً بك يا ${response.name}`,
-                timer: 2000,
+                timer: 1500,
                 showConfirmButton: false
             }).then(() => {
+                // الانتقال للوحة التحكم
                 window.location.href = 'dash_boared.html'; 
             });
+
         } else if (response.result === "wrong_pass") {
             Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
         } else {
             Swal.fire('غير موجود', 'الرقم غير مسجل', 'warning');
         }
-    }).finally(() => { loginBtn.innerText = 'دخول'; loginBtn.disabled = false; });
+    })
+    .catch(err => {
+        Swal.fire('خطأ في الاتصال', 'تأكد من الإنترنت وحاول مجدداً', 'error');
+    })
+    .finally(() => { 
+        loginBtn.innerText = 'دخول'; 
+        loginBtn.disabled = false; 
+    });
 });
