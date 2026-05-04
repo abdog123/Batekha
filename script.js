@@ -49,7 +49,7 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
     }).finally(() => { regBtn.innerText = 'إنشاء حساب'; regBtn.disabled = false; });
 });
 
-// تسجيل الدخول
+// تسجيل الدخول (تم التعديل هنا لحفظ الهاتف)
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const loginBtn = document.getElementById('loginBtn');
@@ -63,16 +63,24 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     .then(res => res.json())
     .then(response => {
         if (response.result === "found") {
-            // حفظ البيانات في المتصفح
+            // --- التعديل الجوهري هنا ---
             const studentData = {
                 name: response.name,
+                phone: response.phone, // حفظ الرقم ليعمل نظام الأصدقاء
                 year: response.year,
                 spec: response.spec
             };
             localStorage.setItem('activeStudent', JSON.stringify(studentData));
+            // --------------------------
 
-            Swal.fire('مرحباً!', `أهلاً بك يا ${response.name}`, 'success').then(() => {
-                window.location.href = 'dash_boared.html'; // الانتقال لصفحة الطلاب
+            Swal.fire({
+                icon: 'success',
+                title: 'مرحباً!',
+                text: `أهلاً بك يا ${response.name}`,
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = 'dash_boared.html'; 
             });
         } else if (response.result === "wrong_pass") {
             Swal.fire('خطأ', 'كلمة المرور غير صحيحة', 'error');
