@@ -3,126 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ساحة التحدي 🔥 - النسخة الاحترافية</title>
+    <title>ساحة التحدي 🔥 - بطيختي</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --fire-bg: #0a0a0a; --orange: #ff4d00; --yellow: #ffae00; --accent: #2ed573; }
+        :root { --fire-bg: #0a0a0a; --orange: #ff4d00; --yellow: #ffae00; --accent: #2ed573; --red: #ff4757; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--fire-bg); color: #fff; margin: 0; padding: 15px; min-height: 100vh; }
+        body { background: var(--fire-bg); background-image: radial-gradient(circle at bottom, #2c0b05 0%, #0a0a0a 70%); color: #fff; margin: 0; padding: 15px; min-height: 100vh; }
 
-        .sub-page { display: none; animation: fadeIn 0.3s ease; }
+        .sub-page { display: none; animation: fadeIn 0.3s ease; width: 100%; max-width: 500px; margin: auto; }
         .active-section { display: block; }
         
-        .fire-title { font-size: 28px; font-weight: 900; text-align: center; margin: 20px 0; background: linear-gradient(#fff, var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .fire-title { font-size: 32px; font-weight: 900; text-align: center; margin: 30px 0; background: linear-gradient(#fff, var(--yellow), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(255,77,0,0.5)); }
 
-        /* الأزرار الرئيسية */
-        .menu-grid { display: grid; gap: 15px; margin-top: 30px; }
-        .main-btn { background: rgba(255,255,255,0.05); border: 2px solid var(--orange); padding: 25px; border-radius: 20px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .menu-grid { display: grid; gap: 15px; width: 100%; }
+        .main-btn { background: rgba(255,255,255,0.05); border: 2px solid var(--orange); padding: 22px; border-radius: 20px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.3s; }
+        .main-btn:active { transform: scale(0.95); background: rgba(255,77,0,0.1); }
 
-        /* نظام الأصدقاء */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; background: #1a1f2e; color: white; font-size: 12px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding: 5px 0; }
+        .tab-btn { white-space: nowrap; padding: 10px 15px; border-radius: 10px; border: none; background: #1a1f2e; color: white; font-size: 12px; flex: 1; }
         .tab-btn.active { background: var(--orange); }
         
-        .card { background: #1a1f2e; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-right: 4px solid var(--orange); position: relative; }
+        .card { background: rgba(255,255,255,0.07); padding: 18px; border-radius: 15px; margin-bottom: 12px; border-right: 4px solid var(--orange); backdrop-filter: blur(5px); }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 5px; }
-        .online { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+        .online { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
         .offline { background: #555; }
 
-        .back-nav { color: var(--yellow); cursor: pointer; display: flex; align-items: center; gap: 5px; margin-bottom: 20px; font-weight: bold; }
+        .back-nav { color: var(--yellow); cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 25px; font-weight: bold; font-size: 18px; }
+        
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin-bottom: 10px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="challengeMenu" class="sub-page active-section">
+    <div id="mainMenu" class="sub-page active-section">
         <div class="fire-title">ساحة التحدي 🔥</div>
         <div class="menu-grid">
-            <button class="main-btn" onclick="showSection('friendsPage')"><i class="fas fa-users"></i> الأصدقاء والطلبات</button>
-            <button class="main-btn" onclick="showSection('selfPage')"><i class="fas fa-fist-raised"></i> تحديات النفس (50+)</button>
-            <button class="main-btn" onclick="window.location.href='index.html'" style="border-color:#444; margin-top:20px; font-size:14px;"><i class="fas fa-home"></i> العودة للمنصة</button>
+            <button class="main-btn" onclick="showSection('friendsPage'); fetchFriendsData();">
+                <i class="fas fa-users"></i> تحدي الأصدقاء
+            </button>
+            <button class="main-btn" onclick="showSection('selfPage')">
+                <i class="fas fa-fist-raised"></i> تحدي نفسك
+            </button>
+            <button class="main-btn" onclick="window.location.href='dash_boared.html'" style="border-color:#555; margin-top:20px; font-size:15px; opacity:0.8;">
+                <i class="fas fa-arrow-right"></i> العودة لصفحة الطلاب
+            </button>
         </div>
     </div>
 
     <div id="friendsPage" class="sub-page">
-        <div class="back-nav" onclick="showSection('challengeMenu')"><i class="fas fa-arrow-right"></i> رجوع</div>
+        <div class="back-nav" onclick="showSection('mainMenu')"><i class="fas fa-arrow-right"></i> رجوع للساحة</div>
         
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('myFriends')">أصدقائي</button>
-            <button class="tab-btn" onclick="switchTab('pendingReq')">طلبات مبعوثة</button>
-            <button class="tab-btn" onclick="switchTab('addFriend')">إضافة صديق</button>
+            <button class="tab-btn" onclick="switchTab('receivedReq')">طلبات واردة</button>
+            <button class="tab-btn" onclick="switchTab('addFriendTab')">إضافة صديق</button>
         </div>
 
         <div id="myFriends" class="tab-content">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span><span class="status-dot online"></span> أحمد محمد</span>
-                    <button onclick="sendChallenge('أحمد')" style="background:var(--accent); border:none; padding:5px 10px; border-radius:5px; font-size:12px;">تحدي</button>
-                </div>
-            </div>
+            <div id="friendsList"><p style="text-align:center; opacity:0.5;">جاري تحميل الأصدقاء...</p></div>
         </div>
 
-        <div id="addFriend" class="tab-content" style="display:none;">
-            <div class="card">
-                <input type="tel" id="friendPhone" placeholder="ادخل رقم هاتف الصديق..." style="width:100%; padding:12px; border-radius:10px; border:none; background:#0a0a0a; color:white; margin-bottom:10px;">
-                <button class="main-btn" style="width:100%; padding:10px; font-size:14px;" onclick="sendFriendRequest()">إرسال طلب صداقة</button>
-            </div>
+        <div id="receivedReq" class="tab-content" style="display:none;">
+            <div id="receivedList"><p style="text-align:center; opacity:0.5;">لا توجد طلبات جديدة</p></div>
         </div>
 
-        <div id="pendingReq" class="tab-content" style="display:none;">
-            <p style="text-align:center; opacity:0.5;">لا توجد طلبات معلقة حالياً</p>
+        <div id="addFriendTab" class="tab-content" style="display:none;">
+            <div class="card">
+                <input type="tel" id="friendPhone" placeholder="ادخل رقم هاتف الصديق...">
+                <button class="main-btn" style="width:100%; padding:12px; font-size:15px;" onclick="sendFriendRequest()">إرسال طلب صداقة</button>
+            </div>
         </div>
     </div>
 
     <div id="selfPage" class="sub-page">
-        <div class="back-nav" onclick="showSection('challengeMenu')"><i class="fas fa-arrow-right"></i> رجوع</div>
+        <div class="back-nav" onclick="showSection('mainMenu')"><i class="fas fa-arrow-right"></i> رجوع للساحة</div>
         
-        <h3 style="color:var(--yellow)">تحدي اليوم المتغير 📅</h3>
-        <div class="card" id="dailyChallengeCard">
-            <h4 id="challengeTitle">تحميل التحدي...</h4>
-            <p id="challengeDesc" style="font-size:14px; opacity:0.8;"></p>
-            <button class="main-btn" style="width:100%; padding:10px; font-size:14px; border-color:var(--accent);" onclick="startChallengeAction()">ابدأ التحدي الآن</button>
+        <h3 style="color:var(--yellow); margin-bottom:20px;"><i class="fas fa-calendar-day"></i> تحدي اليوم</h3>
+        <div class="card" style="border-color: var(--accent);">
+            <h4 id="challengeTitle" style="margin-top:0;">جاري التحميل...</h4>
+            <p id="challengeDesc" style="font-size:14px; opacity:0.8; line-height:1.6;"></p>
+            <button class="main-btn" style="width:100%; padding:12px; font-size:15px; border-color:var(--accent); background:rgba(46,213,115,0.1);" onclick="goToTimer()">ابدأ الآن (فتح العداد)</button>
         </div>
 
-        <div class="card" style="border-color:var(--yellow)">
-            <h4>تحدي السرعة الصاعق ⚡</h4>
-            <p style="font-size:13px;">خلص قائمة مهامك كاملة في أقل من 40 دقيقة.</p>
-            <button onclick="window.location.href='index.html?action=tasks'" style="background:none; border:1px solid var(--yellow); color:white; padding:8px; border-radius:8px; width:100%;">فتح المهام</button>
+        <div class="card" style="border-color: var(--yellow);">
+            <h4><i class="fas fa-bolt"></i> تحدي السرعة اليومي</h4>
+            <p style="font-size:14px; opacity:0.8;">أنهِ جميع المهام المضافة في قائمتك الآن.</p>
+            <button class="main-btn" style="width:100%; padding:12px; font-size:15px; border-color:var(--yellow);" onclick="goToTasks()">اذهب للمهام</button>
         </div>
     </div>
 
     <script>
-        // مصفوفة الـ 50 تحدي
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQvQFMk1xmUGm9VSLjZbd_laF57iRg2Z08_H3EHJtpDSlwtwN8uOp5fPCFmCIdf_ie/exec";
+        const currentUser = JSON.parse(localStorage.getItem('activeStudent')) || {};
+
+        // قائمة الـ 50 تحدي
         const challenges = [
             { title: "تركيز الرهبان 🧘", desc: "ذاكر لمدة 50 دقيقة بدون لمس الموبايل نهائياً." },
             { title: "سرعة البرق ⚡", desc: "حل 15 سؤال في مادة التخصص في 10 دقائق." },
             { title: "تحدي القرآن 📖", desc: "اقرأ حزب كامل قبل البدء في المذاكرة." },
             { title: "عدو التشتت 🚫", desc: "اغلق إشعارات كل التطبيقات لمدة 4 ساعات." },
             { title: "الذاكرة الحديدية 🧠", desc: "لخص درساً كاملاً في صفحة واحدة فقط من الذاكرة." },
-            // ... يمكنك إضافة حتى 50 تحدي هنا
+            { title: "مقاتل الفجر 🌅", desc: "أنهِ أهم مهمة عندك قبل الساعة 8 صباحاً." }
+            // ... أضف بقية الـ 50 تحدي هنا بنفس النمط
         ];
 
-        // اختيار تحدي بناءً على تاريخ اليوم
-        function loadDailyChallenge() {
-            const today = new Date();
-            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-            const challengeIndex = dayOfYear % challenges.length;
-            const daily = challenges[challengeIndex];
-            
-            document.getElementById('challengeTitle').innerText = daily.title;
-            document.getElementById('challengeDesc').innerText = daily.desc;
-        }
-
-        // إظهار وإخفاء الأقسام
         function showSection(id) {
             document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active-section'));
             document.getElementById(id).classList.add('active-section');
             if(id === 'selfPage') loadDailyChallenge();
         }
 
-        // التبديل بين تبويبات الأصدقاء
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -130,31 +123,69 @@
             event.target.classList.add('active');
         }
 
-        // نظام الأصدقاء (محاكاة الربط بالشيت)
-        function sendFriendRequest() {
-            const phone = document.getElementById('friendPhone').value;
-            if(phone.length < 10) {
-                Swal.fire('خطأ', 'ادخل رقم هاتف صحيح', 'error');
-                return;
-            }
-            // هنا يتم إرسال البيانات لـ Google Sheets عبر API
-            Swal.fire('تم الإرسال', `تم إرسال طلب صداقة للرقم ${phone}`, 'success');
-            document.getElementById('pendingReq').innerHTML = `<div class="card">طلب مبعوث إلى: ${phone} <span style="font-size:10px; color:var(--yellow)">(قيد الانتظار)</span></div>`;
+        function loadDailyChallenge() {
+            const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+            const daily = challenges[dayOfYear % challenges.length];
+            document.getElementById('challengeTitle').innerText = daily.title;
+            document.getElementById('challengeDesc').innerText = daily.desc;
         }
 
-        function startChallengeAction() {
-            Swal.fire({
-                title: 'تفعيل التحدي؟',
-                text: 'سيتم نقلك للعداد لبدء تنفيذ تحدي اليوم',
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: 'يلا بينا'
-            }).then(r => {
-                if(r.isConfirmed) window.location.href = 'index.html?startTimer=true';
-            });
+        // الربط بصفحة الطلاب (dash_boared.html) مع بارامترات لفتح القسم المطلوب
+        function goToTimer() { window.location.href = 'dash_boared.html?open=timer&start=true'; }
+        function goToTasks() { window.location.href = 'dash_boared.html?open=tasks'; }
+
+        // --- نظام الأصدقاء الحقيقي بالشيت ---
+
+        async function fetchFriendsData() {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${currentUser.phone}`);
+                const data = await res.json();
+                renderFriends(data);
+            } catch (e) { console.error("Error fetching data"); }
+        }
+
+        function renderFriends(data) {
+            const fList = document.getElementById('friendsList');
+            fList.innerHTML = data.friends.length ? data.friends.map(f => `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span><span class="status-dot ${f.online ? 'online' : 'offline'}"></span> ${f.name}</span>
+                        <button onclick="Swal.fire('تحدي!', 'تم إرسال طلب تحدي لـ ${f.name}', 'success')" style="background:var(--accent); border:none; padding:6px 12px; border-radius:8px; font-weight:bold;">تحدي</button>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء مضافون</p>';
+
+            const rList = document.getElementById('receivedList');
+            rList.innerHTML = data.received.length ? data.received.map(r => `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>${r.name} (${r.phone})</span>
+                        <div>
+                            <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); border:none; color:white; padding:8px; border-radius:5px; margin-left:5px;"><i class="fas fa-check"></i></button>
+                            <button onclick="respond('${r.phone}', 'reject')" style="background:var(--red); border:none; color:white; padding:8px; border-radius:5px;"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align:center; opacity:0.5;">لا توجد طلبات واردة حالياً</p>';
+        }
+
+        async function sendFriendRequest() {
+            const phone = document.getElementById('friendPhone').value;
+            if(!phone) return;
+            Swal.fire({title: 'جاري الإرسال...', didOpen: () => Swal.showLoading()});
+            const res = await fetch(`${SCRIPT_URL}?action=addFriend&sender=${currentUser.phone}&receiver=${phone}`);
+            const result = await res.json();
+            Swal.fire(result.status === 'success' ? 'تم!' : 'فشل', result.message, result.status);
+        }
+
+        async function respond(phone, action) {
+            await fetch(`${SCRIPT_URL}?action=respondRequest&user=${currentUser.phone}&target=${phone}&status=${action}`);
+            Swal.fire('تم التحديث', '', 'success');
+            fetchFriendsData();
         }
 
         window.onload = loadDailyChallenge;
     </script>
 </body>
 </html>
+
