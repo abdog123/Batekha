@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة بطيختي 🍉 - النسخة النهائية المعتمدة</title>
+    <title>منصة بطيختي 🍉 - الإصدار النهائي</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -17,12 +17,12 @@
         .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
         .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
 
-        /* الصفحات */
+        /* الصفحات والتحريك */
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
         .back-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--accent); cursor: pointer; font-weight: bold; }
         
-        /* الشبكة الرئيسية */
+        /* الأدوات والبطاقات */
         .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; }
         .tool-card { background: var(--card-bg); padding: 25px; border-radius: 22px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
         .tool-card i { font-size: 30px; color: var(--accent); margin-bottom: 12px; display: block; }
@@ -32,7 +32,6 @@
         .profile-card { background: var(--card-bg); border-radius: 30px; padding: 25px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
         .profile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(45deg, var(--primary), var(--accent)); z-index: 0; }
         .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; z-index: 1; margin-top: 10px; background: #2a3245; }
-        
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
         .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); display: block; }
@@ -45,19 +44,22 @@
         .timer-circle-progress { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 628; stroke-dashoffset: 628; transition: 0.3s; }
         .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 45px; font-weight: bold; font-family: monospace; }
 
-        /* شريط التنقل */
+        /* المهام والاشعارات */
+        .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
+        .notif-warning { background: #ff4757; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; text-align: center; animation: pulse 2s infinite; }
+
+        /* شريط التنقل السفلي */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #161a26; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2a3245; z-index: 1000; transition: 0.4s ease; }
         .nav-item { text-align: center; color: #5d6778; font-size: 11px; flex: 1; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
-        .nav-center { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; color: white; }
+        .nav-center { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; color: white; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
 
-        /* المهام والإشعارات */
-        .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
-        .notif-warning { background: #ff4757; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; text-align: center; }
-        
-        .player-bar { position: fixed; bottom: 85px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        /* مشغل الصوت */
+        .player-bar { position: fixed; bottom: 85px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; }
         .player-bar audio { height: 30px; flex: 1; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -89,7 +91,7 @@
     <div id="profilePage" class="page">
         <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div class="profile-card">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img" alt="User">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img">
             <div class="profile-info">
                 <h2 id="pName">طالب بطيخة</h2>
                 <p id="pYearText">--</p>
@@ -101,7 +103,7 @@
                 <div class="stat-box"><span class="stat-num">#1</span><span class="stat-txt">الترتيب</span></div>
                 <div class="stat-box"><span class="stat-num" id="statLevel">بطيخة</span><span class="stat-txt">المستوى</span></div>
             </div>
-            <button onclick="logout()" style="background:#ff4757; color:white; border:none; padding:15px; width:100%; border-radius:15px; margin-top:20px; font-weight:bold;">تسجيل الخروج</button>
+            <button onclick="logout()" style="background:#ff4757; color:white; border:none; padding:15px; width:100%; border-radius:15px; margin-top:20px; font-weight:bold; cursor:pointer;">تسجيل الخروج</button>
         </div>
     </div>
 
@@ -116,7 +118,7 @@
             <div class="timer-text" id="tDisplay">25:00</div>
         </div>
         <div style="text-align:center; display: flex; justify-content: center; gap: 15px;">
-            <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold;">بدء</button>
+            <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold; color:#000;">بدء</button>
             <button onclick="resetT()" style="background:#ff4757; border:none; padding:18px; border-radius:18px; color: white;"><i class="fas fa-redo"></i></button>
         </div>
     </div>
@@ -124,21 +126,30 @@
     <div id="tasksPage" class="page">
         <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة؟">
-            <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px;"><i class="fas fa-plus"></i></button>
+            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة يا بطيخة؟">
+            <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px; color:#000;"><i class="fas fa-plus"></i></button>
         </div>
         <div id="tList"></div>
     </div>
 
-    <div id="quranPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="quranList"></div></div>
+    <div id="quranPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div id="quranList"></div>
+    </div>
     
-    <div id="subjectsPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div></div>
+    <div id="subjectsPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+    </div>
     
-    <div id="notifPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="notifContent"></div></div>
+    <div id="notifPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div id="notifContent"></div>
+    </div>
 
     <div id="playerBar" class="player-bar">
         <audio id="mainAudio" controls></audio>
-        <i class="fas fa-times" onclick="stopAudio()" style="margin-right:10px; cursor:pointer;"></i>
+        <i class="fas fa-times" onclick="stopAudio()" style="margin-right:10px; cursor:pointer; color:#fff;"></i>
     </div>
 
     <div class="bottom-nav" id="mainNav">
@@ -153,14 +164,20 @@
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
 
-        // تحويل أرقام الصفوف لكلمات
+        // مترجم أرقام الصفوف
         function getYearName(yearNum) {
             const years = { "1": "الأول", "2": "الثاني", "3": "الثالث" };
             return years[String(yearNum)] || yearNum;
         }
 
+        // جلب بيانات الطالب
         function getStudentData() {
-            return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3", branch: "علمي علوم" };
+            const data = JSON.parse(localStorage.getItem('activeStudent'));
+            if(!data) {
+                // افتراض بيانات أولية إذا لم يسبق التسجيل (للتجربة)
+                return { name: "طالب بطيخة", year: "3", branch: "علمي علوم" };
+            }
+            return data;
         }
 
         function loadProfileData() {
@@ -172,8 +189,9 @@
             document.getElementById('statDone').innerText = totalFinishedCount;
             document.getElementById('statPoints').innerText = totalFinishedCount * 10;
             
-            if(totalFinishedCount > 50) document.getElementById('statLevel').innerText = "بطيخة أسطورية 👑";
-            else if(totalFinishedCount > 20) document.getElementById('statLevel').innerText = "بطيخة ذهبية ✨";
+            if(totalFinishedCount > 100) document.getElementById('statLevel').innerText = "بطيخة ملكية 👑";
+            else if(totalFinishedCount > 50) document.getElementById('statLevel').innerText = "بطيخة أسطورية ✨";
+            else if(totalFinishedCount > 20) document.getElementById('statLevel').innerText = "بطيخة ذهبية 🌟";
             else document.getElementById('statLevel').innerText = "بطيخة ناشئة 🌱";
         }
 
@@ -196,7 +214,7 @@
             document.getElementById('mainNav').style.transform = 'translateY(0)';
         }
 
-        // --- العداد ---
+        // --- نظام العداد ---
         let timeLeft = 1500, totalTime = 1500, timerInterval = null;
         function syncTimer() { if(!timerInterval) { timeLeft = (document.getElementById('customMin').value || 25) * 60; totalTime = timeLeft; updateUI(); } }
         function toggleT() {
@@ -208,7 +226,7 @@
                     if(timeLeft <= 0) { 
                         clearInterval(timerInterval); timerInterval = null;
                         document.getElementById('notifSound').play();
-                        Swal.fire('انتهى الوقت! 🎉', 'خد راحة يا بطيخة', 'success'); resetT();
+                        Swal.fire('عاش يا بطيخة! 🎉', 'خلصت وقت التركيز، خد راحة شوية', 'success'); resetT();
                     }
                 }, 1000); document.getElementById('tBtn').innerText = "إيقاف";
             }
@@ -216,28 +234,28 @@
         function updateUI() { const m = Math.floor(timeLeft/60), s = timeLeft%60; document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`; }
         function resetT() { clearInterval(timerInterval); timerInterval = null; syncTimer(); document.getElementById('progressCircle').style.strokeDashoffset = 628; document.getElementById('tBtn').innerText = "بدء"; }
 
-        // --- المهام ---
+        // --- نظام المهام ---
         function loadT() {
             document.getElementById('tList').innerHTML = tasks.map((t, i) => `
                 <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
                     <span style="${t.done ? 'text-decoration:line-through' : ''}">${t.text}</span>
                     <div>
-                        ${!t.done ? `<i class="fas fa-check-circle" onclick="confirmDone(${i})" style="color:var(--accent); cursor:pointer;"></i>` : ''}
-                        <i class="fas fa-trash" onclick="deleteTask(${i})" style="color:#ff4757; cursor:pointer; margin-right:10px;"></i>
+                        ${!t.done ? `<i class="fas fa-check-circle" onclick="confirmDone(${i})" style="color:var(--accent); cursor:pointer; font-size:20px;"></i>` : ''}
+                        <i class="fas fa-trash" onclick="deleteTask(${i})" style="color:#ff4757; cursor:pointer; margin-right:15px; font-size:18px;"></i>
                     </div>
                 </div>
             `).join('');
         }
 
         function confirmDone(i) {
-            Swal.fire({ title: 'خلصت المهمة؟ 🍉', icon: 'question', showCancelButton: true, confirmButtonText: 'نعم' }).then((r) => {
+            Swal.fire({ title: 'خلصت المهمة بجد؟ 🍉', icon: 'question', showCancelButton: true, confirmButtonText: 'أيوه خلصت', cancelButtonText: 'لسه' }).then((r) => {
                 if (r.isConfirmed) {
                     document.getElementById('cheerSound').play();
                     tasks[i].done = true;
                     totalFinishedCount++;
                     localStorage.setItem('totalFinishedCount', totalFinishedCount);
                     saveT(); loadT();
-                    Swal.fire('عاش! 🔥', 'تم إضافة النقاط لرصيدك الدائم', 'success');
+                    Swal.fire('بطل! 🔥', 'تم إضافة 10 نقاط لرصيدك التراكمي', 'success');
                 }
             });
         }
@@ -248,11 +266,13 @@
         }
         function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
 
-        // --- القرآن والمشغل ---
+        // --- القرآن والمواد ---
         async function loadQ() {
             const list = document.getElementById('quranList'); if(list.innerHTML !== "") return;
-            const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
-            list.innerHTML = data.data.map(s => `<div class="task-item" onclick="playSurah(${s.number})"><span>${s.name}</span><i class="fas fa-play-circle" style="color:var(--accent)"></i></div>`).join('');
+            try {
+                const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
+                list.innerHTML = data.data.map(s => `<div class="task-item" onclick="playSurah(${s.number})"><span>${s.name}</span><i class="fas fa-play-circle" style="color:var(--accent)"></i></div>`).join('');
+            } catch(e) { list.innerHTML = "فشل تحميل قائمة السور"; }
         }
         function playSurah(id) {
             const bar = document.getElementById('playerBar'); const audio = document.getElementById('mainAudio');
@@ -261,13 +281,11 @@
         }
         function stopAudio() { document.getElementById('mainAudio').pause(); document.getElementById('playerBar').style.display = 'none'; }
 
-        // --- ميزة البحث المعدلة (الكلمات بدل الأرقام) ---
         function loadS() {
             const user = getStudentData();
-            const yearName = getYearName(user.year); // يحول 3 لـ "الثالث"
+            const yearName = getYearName(user.year);
             const branchInfo = user.branch || "";
-            const subs = ["عربي", "إنجليزي", "فيزياء", "كيمياء", "أحياء", "رياضيات", "فرنساوي", "جيولوجيا"];
-            
+            const subs = ["عربي", "إنجليزي", "فيزياء", "كيمياء", "أحياء", "رياضيات", "فرنساوي", "جيولوجيا", "تاريخ", "جغرافيا"];
             document.getElementById('sGrid').innerHTML = subs.map(s => `
                 <div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح مادة ${s} للصف ${yearName} الثانوي ${branchInfo}','_blank')">
                     <h4>${s}</h4>
@@ -275,11 +293,12 @@
             `).join('');
         }
 
+        // --- الإشعارات ---
         function loadNotifs() {
             const undone = tasks.filter(t => !t.done);
             let html = undone.length > 0 ? 
                 `<div class="notif-warning">معاك مهمة مش مخلصها يا بطيخة 🍉 (${undone.length})</div>` + undone.map(t => `<div class="task-item">${t.text}</div>`).join('') :
-                `<div style="text-align:center; opacity:0.5; margin-top:50px;"><i class="fas fa-check-double" style="font-size:50px; color:var(--accent);"></i><p>كلو تمام يا بطيخة!</p></div>`;
+                `<div style="text-align:center; opacity:0.5; margin-top:50px;"><i class="fas fa-check-double" style="font-size:50px; color:var(--accent);"></i><p>كلو تمام يا بطيخة! مفيش وراك حاجة</p></div>`;
             document.getElementById('notifContent').innerHTML = html;
         }
 
@@ -288,12 +307,30 @@
             const b = document.getElementById('notifBadge');
             b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none';
         }
-        function logout() { localStorage.clear(); location.reload(); }
 
+        // --- تسجيل الخروج ---
+        function logout() {
+            Swal.fire({
+                title: 'خارج ليه يا بطيخة؟ 🍉',
+                text: "متأكد إنك عايز تسجل الخروج؟",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2ed573',
+                cancelButtonColor: '#ff4757',
+                confirmButtonText: 'أيوه، سلام',
+                cancelButtonText: 'خليني شوية'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('activeStudent');
+                    window.location.href = 'index.html'; 
+                }
+            });
+        }
+
+        // التشغيل الأولي
         loadProfileData();
         updateBadge();
         syncTimer();
     </script>
 </body>
 </html>
-
