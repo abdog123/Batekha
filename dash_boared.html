@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة بطيختي 🍉 - الإصدار الذكي</title>
+    <title>منصة بطيختي 🍉 - نسخة الرصيد الدائم</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -11,274 +11,303 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--main-bg); color: var(--text); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
 
-        /* الهيدر العلوي */
+        /* الهيدر */
         .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #161a26; position: sticky; top: 0; z-index: 1000; }
-        .nav-icons { display: flex; gap: 12px; }
+        .nav-icons { display: flex; gap: 12px; align-items: center; }
         .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
         .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
-
-        /* أزرار الرجوع الجديدة */
-        .back-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--accent); cursor: pointer; font-weight: bold; }
-
-        /* قسم المدرسين */
-        .teachers-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 15px; scrollbar-width: none; }
-        .teachers-scroll::-webkit-scrollbar { display: none; }
-        .teacher-card { min-width: 85px; text-align: center; cursor: pointer; }
-        .teacher-card img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--accent); padding: 2px; object-fit: cover; background: #eee; }
-        .teacher-card span { display: block; font-size: 11px; margin-top: 8px; font-weight: 500; }
-
-        /* بانر التحدي */
-        .challenge-banner { margin: 15px; padding: 20px; background: linear-gradient(45deg, #ff4757, #764ba2); border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-
-        /* شبكة الأدوات */
-        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .tool-card { background: var(--card-bg); padding: 20px 15px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.3s; }
-        .tool-card i { font-size: 26px; color: var(--accent); margin-bottom: 12px; display: block; }
-        .tool-card h4 { margin: 0; font-size: 14px; }
 
         /* الصفحات */
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
+        .back-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--accent); cursor: pointer; font-weight: bold; }
+        
+        /* الشبكة الرئيسية */
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; }
+        .tool-card { background: var(--card-bg); padding: 25px; border-radius: 22px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+        .tool-card i { font-size: 30px; color: var(--accent); margin-bottom: 12px; display: block; }
+        .challenge-card { background: linear-gradient(45deg, #f093fb, #f5576c); grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px; }
 
-        /* العداد الدائري */
-        .timer-container { position: relative; width: 220px; height: 220px; margin: 30px auto; }
+        /* البروفايل */
+        .profile-card { background: var(--card-bg); border-radius: 30px; padding: 25px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
+        .profile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(45deg, var(--primary), var(--accent)); z-index: 0; }
+        .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; z-index: 1; margin-top: 10px; background: #2a3245; }
+        .profile-info h2 { margin: 10px 0 5px; font-size: 22px; }
+        .profile-info p { color: var(--accent); margin: 0; font-size: 14px; opacity: 0.9; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); display: block; }
+        .stat-txt { font-size: 11px; color: #888; display: block; }
+
+        /* العداد */
+        .timer-container { position: relative; width: 220px; height: 220px; margin: 20px auto; }
         .timer-svg { transform: rotate(-90deg); width: 220px; height: 220px; }
         .timer-circle-bg { fill: none; stroke: #2a3245; stroke-width: 8; }
         .timer-circle-progress { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 628; stroke-dashoffset: 628; transition: 0.3s; }
         .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 45px; font-weight: bold; font-family: monospace; }
 
-        /* شريط التنقل السفلي */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #161a26; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2a3245; z-index: 1000; }
-        .nav-item { text-align: center; color: #5d6778; font-size: 11px; cursor: pointer; flex: 1; }
+        /* شريط التنقل */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #161a26; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2a3245; z-index: 1000; transition: 0.4s ease; }
+        .nav-item { text-align: center; color: #5d6778; font-size: 11px; flex: 1; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
-        .nav-center { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; color: white; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-
-        /* المهام و الإشعارات */
-        .task-item, .notif-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
-        .task-done { text-decoration: line-through; opacity: 0.4; filter: grayscale(1); }
-        .notif-time { font-size: 10px; color: #5d6778; }
+        .nav-center { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; color: white; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
+        .notif-warning { background: #ff4757; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; text-align: center; }
+        
+        .player-bar { position: fixed; bottom: 85px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .player-bar audio { height: 30px; flex: 1; }
     </style>
 </head>
 <body>
 
+    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <audio id="cheerSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
     <div class="top-nav">
-        <h3 style="margin:0; font-size: 22px;">بطيختي 🍉</h3>
+        <h3 style="margin:0;">بطيختي 🍉</h3>
         <div class="nav-icons">
-            <div class="icon-circle" onclick="openPage('notifPage', 'التنبيهات')">
-                <i class="fas fa-bell"></i>
-                <span class="badge" id="notifBadge">0</span>
-            </div>
-            <div class="icon-circle" onclick="openPage('profilePage', 'البروفايل')"><i class="fas fa-user"></i></div>
+            <div class="icon-circle" onclick="openPage('notifPage')"><i class="fas fa-bell"></i><span class="badge" id="notifBadge">0</span></div>
+            <div class="icon-circle" onclick="openPage('profilePage')"><i class="fas fa-user"></i></div>
         </div>
     </div>
 
     <div id="homePage" class="page active-page">
-        <div class="teachers-scroll">
-            <div class="teacher-card" onclick="window.open('https://www.youtube.com/@KhaledSakr', '_blank')">
-                <img src="https://yt3.ggpht.com/ytc/AIdro_n4zLzL-C5Xy9VzZJ6W8W-uV-yQ1M=s88-c-k-c0x00ffffff-no-rj">
-                <span>خالد صقر</span>
-            </div>
-            <div class="teacher-card" onclick="window.open('https://www.youtube.com/@BastaTehalak', '_blank')">
-                <img src="https://yt3.ggpht.com/ytc/AIdro_mN-kGv1W3rM-7H1H0RzV9v5z-A=s88-c-k-c0x00ffffff-no-rj">
-                <span>بسطتهالك</span>
-            </div>
-            <div class="teacher-card" onclick="window.open('https://www.youtube.com/@mr.mohamedabdelmaaboud', '_blank')">
-                <img src="https://yt3.ggpht.com/ytc/AIdro_k6P7-L7X3-Xy1H6V5W-uV-yQ1M=s88-c-k-c0x00ffffff-no-rj">
-                <span>عبدالمعبود</span>
-            </div>
-            <div class="teacher-card" onclick="window.open('https://www.youtube.com/@MoreEnglish', '_blank')">
-                <img src="https://yt3.ggpht.com/ytc/AIdro_m-Xy9VzZJ6W8W-uV-yQ1M=s88-c-k-c0x00ffffff-no-rj">
-                <span>More English</span>
-            </div>
-        </div>
-
-        <div class="challenge-banner" onclick="window.location.href='chal.html'">
-            <div>
-                <h4 style="margin:0;">التحدي مع الأصدقاء 🏆</h4>
-                <p style="margin:5px 0 0; font-size:12px;">نافس أصحابك وسبقهم في المذاكرة</p>
-            </div>
-            <i class="fas fa-rocket" style="font-size: 25px;"></i>
-        </div>
-
         <div class="tools-grid">
-            <div class="tool-card" onclick="openPage('subjectsPage', 'المواد الدراسية')"><i class="fas fa-play-circle"></i><h4>شرح المواد</h4></div>
-            <div class="tool-card" onclick="openPage('quranPage', 'القرآن الكريم')"><i class="fas fa-quran"></i><h4>القرآن</h4></div>
-            <div class="tool-card" onclick="openPage('tasksPage', 'مهامي اليومية')"><i class="fas fa-check-circle"></i><h4>المهام</h4></div>
-            <div class="tool-card" onclick="openPage('timerPage', 'العداد')"><i class="fas fa-stopwatch"></i><h4>العداد</h4></div>
+            <div class="tool-card challenge-card" onclick="window.location.href='chel.html'">
+                <i class="fas fa-trophy" style="margin:0; color:white;"></i>
+                <h3 style="margin:0;">تحدي الأصدقاء 🔥</h3>
+            </div>
+            <div class="tool-card" onclick="openPage('subjectsPage')"><i class="fas fa-play-circle"></i><h4>المواد</h4></div>
+            <div class="tool-card" onclick="openPage('quranPage')"><i class="fas fa-quran"></i><h4>القرآن</h4></div>
+            <div class="tool-card" onclick="openPage('tasksPage')"><i class="fas fa-check-circle"></i><h4>المهام</h4></div>
+            <div class="tool-card" onclick="openPage('timerPage')"><i class="fas fa-stopwatch"></i><h4>العداد</h4></div>
         </div>
     </div>
 
-    <div id="notifPage" class="page">
-        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة للرئيسية</div>
-        <h4 style="color: var(--accent); margin-top: 0;">تنبيهات البطيخة الذكية 🧠</h4>
-        <div id="notifList"></div>
+    <div id="profilePage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div class="profile-card">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img" alt="User">
+            <div class="profile-info">
+                <h2 id="pName">طالب بطيخة</h2>
+                <p id="pYear">الصف الثالث الثانوي</p>
+                <span id="pBranch" style="font-size: 12px; color: #888;">علمي علوم</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box"><span class="stat-num" id="statDone">0</span><span class="stat-txt">إجمالي الإنجاز</span></div>
+                <div class="stat-box"><span class="stat-num" id="statPoints">0</span><span class="stat-txt">نقاطي الكلية</span></div>
+                <div class="stat-box"><span class="stat-num">#1</span><span class="stat-txt">الترتيب</span></div>
+                <div class="stat-box"><span class="stat-num" id="statLevel">بطيخة</span><span class="stat-txt">المستوى</span></div>
+            </div>
+            <button onclick="logout()" style="background:#ff4757; color:white; border:none; padding:15px; width:100%; border-radius:15px; margin-top:20px; font-weight:bold;">تسجيل الخروج</button>
+        </div>
     </div>
 
     <div id="timerPage" class="page">
-        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة للرئيسية</div>
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div style="text-align:center;">
             <p>وقت التركيز (بالدقائق):</p>
-            <input type="number" id="customMin" value="25" oninput="syncTimer()" style="background:#1a1f2e; border:1px solid var(--primary); color:white; padding:12px; border-radius:12px; width:100px; text-align:center; font-size: 20px;">
+            <input type="number" id="customMin" value="25" oninput="syncTimer()" style="background:#1a1f2e; border:1px solid var(--primary); color:white; padding:12px; border-radius:12px; width:100px; text-align:center;">
         </div>
         <div class="timer-container">
-            <svg class="timer-svg">
-                <circle class="timer-circle-bg" cx="110" cy="110" r="100"></circle>
-                <circle id="progressCircle" class="timer-circle-progress" cx="110" cy="110" r="100"></circle>
-            </svg>
+            <svg class="timer-svg"><circle class="timer-circle-bg" cx="110" cy="110" r="100"></circle><circle id="progressCircle" class="timer-circle-progress" cx="110" cy="110" r="100"></circle></svg>
             <div class="timer-text" id="tDisplay">25:00</div>
         </div>
         <div style="text-align:center; display: flex; justify-content: center; gap: 15px;">
-            <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold; color:#000; font-size: 18px;">بدء</button>
+            <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold;">بدء</button>
             <button onclick="resetT()" style="background:#ff4757; border:none; padding:18px; border-radius:18px; color: white;"><i class="fas fa-redo"></i></button>
         </div>
     </div>
 
     <div id="tasksPage" class="page">
-        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة للرئيسية</div>
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="إيه المهمة الجديدة يا بطل؟">
+            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة؟">
             <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px;"><i class="fas fa-plus"></i></button>
         </div>
         <div id="tList"></div>
     </div>
 
-    <div id="quranPage" class="page">
-        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة للرئيسية</div>
-        <div id="quranList"></div>
+    <div id="quranPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="quranList"></div></div>
+    
+    <div id="subjectsPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div></div>
+    
+    <div id="notifPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div id="notifContent"></div>
     </div>
 
-    <div id="subjectsPage" class="page">
-        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة للرئيسية</div>
-        <div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+    <div id="playerBar" class="player-bar">
+        <audio id="mainAudio" controls></audio>
+        <i class="fas fa-times" onclick="stopAudio()" style="margin-right:10px; cursor:pointer;"></i>
     </div>
 
-    <div id="profilePage" class="page">
-        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة للرئيسية</div>
-        <div style="background:var(--card-bg); padding:40px 20px; border-radius:30px; text-align:center;">
-            <div style="width:100px; height:100px; background:var(--primary); border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:40px;">🍉</div>
-            <h2 id="pName">طالب بطيخة</h2>
-            <p id="pYear" style="color:var(--accent);">الصف الثالث ثانوي</p>
-            <button onclick="logout()" style="background:#ff4757; color:white; border:none; padding:18px; width:100%; border-radius:18px; margin-top:30px; font-weight:bold;">تسجيل الخروج</button>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
+    <div class="bottom-nav" id="mainNav">
         <div class="nav-item active" onclick="goHome()"><i class="fas fa-home"></i><br>الرئيسية</div>
-        <div class="nav-item" onclick="openPage('subjectsPage', 'المواد')"><i class="fas fa-book"></i><br>المواد</div>
-        <div class="nav-item nav-center" onclick="openPage('timerPage', 'العداد')"><i class="fas fa-stopwatch" style="font-size: 22px;"></i></div>
-        <div class="nav-item" onclick="openPage('quranPage', 'القرآن')"><i class="fas fa-headphones"></i><br>المكتبة</div>
-        <div class="nav-item" onclick="openPage('profilePage', 'البروفايل')"><i class="fas fa-user-circle"></i><br>بروفايل</div>
+        <div class="nav-item" onclick="openPage('subjectsPage')"><i class="fas fa-book"></i><br>المواد</div>
+        <div class="nav-item nav-center" onclick="openPage('timerPage')"><i class="fas fa-stopwatch"></i></div>
+        <div class="nav-item" onclick="openPage('quranPage')"><i class="fas fa-headphones"></i><br>القرآن</div>
+        <div class="nav-item" onclick="openPage('profilePage')"><i class="fas fa-user-circle"></i><br>بروفايل</div>
     </div>
 
     <script>
+        // تحميل البيانات الأساسية
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        let notifs = JSON.parse(localStorage.getItem('notifs')) || [];
-        const student = JSON.parse(localStorage.getItem('activeStudent')) || {name: "طالب بطيخة", year: "3"};
-        document.getElementById('pName').innerText = student.name;
-        document.getElementById('pYear').innerText = "الصف " + student.year + " ثانوي";
+        
+        // --- ميزة الرصيد التراكمي (الحل الجديد) ---
+        let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
 
-        function openPage(id, title) {
+        function getStudentData() {
+            return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3 ثانوي", branch: "عام" };
+        }
+
+        function loadProfileData() {
+            const user = getStudentData();
+            document.getElementById('pName').innerText = user.name;
+            document.getElementById('pYear').innerText = user.year;
+            document.getElementById('pBranch').innerText = user.branch || "";
+            
+            // نستخدم totalFinishedCount لعرض الإحصائيات الدائمة
+            document.getElementById('statDone').innerText = totalFinishedCount;
+            document.getElementById('statPoints').innerText = totalFinishedCount * 10;
+            
+            if(totalFinishedCount > 50) document.getElementById('statLevel').innerText = "بطيخة أسطورية 👑";
+            else if(totalFinishedCount > 20) document.getElementById('statLevel').innerText = "بطيخة ذهبية ✨";
+            else document.getElementById('statLevel').innerText = "بطيخة ناشئة 🌱";
+        }
+
+        function openPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById(id).classList.add('active-page');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('mainNav').style.transform = 'translateY(100px)';
+            
+            if(id === 'profilePage') loadProfileData();
             if(id === 'tasksPage') loadT();
             if(id === 'quranPage') loadQ();
             if(id === 'subjectsPage') loadS();
             if(id === 'notifPage') loadNotifs();
             updateBadge();
         }
-        function goHome() { 
+
+        function goHome() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById('homePage').classList.add('active-page');
-            updateBadge();
-        }
-
-        // --- المهام ---
-        function loadT() {
-            document.getElementById('tList').innerHTML = tasks.map((t, i) => `
-                <div class="task-item ${t.done ? 'task-done' : ''}">
-                    <span>${t.text}</span>
-                    <div>
-                        ${!t.done ? `<i class="fas fa-check-circle" style="color:var(--accent); margin-left:12px; cursor:pointer;" onclick="confirmDone(${i})"></i>` : ''}
-                        <i class="fas fa-trash" style="color:#ff4757; cursor:pointer;" onclick="tasks.splice(${i},1); saveT(); loadT();"></i>
-                    </div>
-                </div>
-            `).join('');
-        }
-        function addTask() {
-            const input = document.getElementById('tInput');
-            if(!input.value) return;
-            tasks.push({text: input.value, done: false}); saveT(); input.value = ""; loadT();
-        }
-        function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
-        function confirmDone(i) {
-            Swal.fire({ title: 'عاش! 🍉', text: 'خلصت المهمة؟', icon: 'question', showCancelButton: true }).then(res => {
-                if(res.isConfirmed) { tasks[i].done = true; saveT(); loadT(); }
-            });
-        }
-
-        // --- الإشعارات و البادج الذكي ---
-        function updateBadge() {
-            const undoneCount = tasks.filter(t => !t.done).length;
-            const badge = document.getElementById('notifBadge');
-            if(undoneCount > 0) {
-                badge.innerText = undoneCount;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-        function addNotif(msg) {
-            notifs.unshift({msg: msg, time: new Date().toLocaleTimeString()});
-            if(notifs.length > 10) notifs.pop();
-            localStorage.setItem('notifs', JSON.stringify(notifs));
-            updateBadge();
-        }
-        function loadNotifs() {
-            const list = document.getElementById('notifList');
-            if(notifs.length === 0) { list.innerHTML = "<p style='text-align:center; opacity:0.5;'>لا يوجد تنبيهات</p>"; return; }
-            list.innerHTML = notifs.map(n => `<div class="notif-item"><div>${n.msg}<br><span class="notif-time">${n.time}</span></div></div>`).join('');
+            document.getElementById('mainNav').style.transform = 'translateY(0)';
         }
 
         // --- العداد ---
         let timeLeft = 1500, totalTime = 1500, timerInterval = null;
-        function syncTimer() {
-            if(!timerInterval) {
-                timeLeft = (document.getElementById('customMin').value || 25) * 60;
-                totalTime = timeLeft;
-                updateUI();
-            }
-        }
+        function syncTimer() { if(!timerInterval) { timeLeft = (document.getElementById('customMin').value || 25) * 60; totalTime = timeLeft; updateUI(); } }
         function toggleT() {
-            if(!timerInterval) {
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; document.getElementById('tBtn').innerText = "استكمال"; }
+            else {
                 timerInterval = setInterval(() => {
                     timeLeft--; updateUI();
                     document.getElementById('progressCircle').style.strokeDashoffset = 628 - ((totalTime - timeLeft) / totalTime) * 628;
-                    if(timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; Swal.fire('عاش! 🍉'); }
+                    if(timeLeft <= 0) { 
+                        clearInterval(timerInterval); timerInterval = null;
+                        document.getElementById('notifSound').play();
+                        Swal.fire('انتهى الوقت! 🎉', 'خد راحة يا بطيخة', 'success'); resetT();
+                    }
                 }, 1000); document.getElementById('tBtn').innerText = "إيقاف";
-            } else { clearInterval(timerInterval); timerInterval = null; document.getElementById('tBtn').innerText = "استكمال"; }
+            }
         }
-        function updateUI() {
-            const m = Math.floor(timeLeft/60), s = timeLeft%60;
-            document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`;
-        }
-        function resetT() { clearInterval(timerInterval); timerInterval = null; syncTimer(); document.getElementById('progressCircle').style.strokeDashoffset = 628; }
+        function updateUI() { const m = Math.floor(timeLeft/60), s = timeLeft%60; document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`; }
+        function resetT() { clearInterval(timerInterval); timerInterval = null; syncTimer(); document.getElementById('progressCircle').style.strokeDashoffset = 628; document.getElementById('tBtn').innerText = "بدء"; }
 
-        // --- القرآن والمواد ---
+        // --- المهام (تم التعديل لحساب النقاط للأبد) ---
+        function loadT() {
+            document.getElementById('tList').innerHTML = tasks.map((t, i) => `
+                <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
+                    <span style="${t.done ? 'text-decoration:line-through' : ''}">${t.text}</span>
+                    <div>
+                        ${!t.done ? `<i class="fas fa-check-circle" onclick="confirmDone(${i})" style="color:var(--accent); cursor:pointer;"></i>` : ''}
+                        <i class="fas fa-trash" onclick="deleteTask(${i})" style="color:#ff4757; cursor:pointer; margin-right:10px;"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function confirmDone(i) {
+            Swal.fire({ title: 'خلصت المهمة؟ 🍉', icon: 'question', showCancelButton: true, confirmButtonText: 'نعم' }).then((r) => {
+                if (r.isConfirmed) {
+                    document.getElementById('cheerSound').play();
+                    tasks[i].done = true;
+                    
+                    // زيادة الرصيد الدائم في المتصفح
+                    totalFinishedCount++;
+                    localStorage.setItem('totalFinishedCount', totalFinishedCount);
+                    
+                    saveT(); 
+                    loadT();
+                    Swal.fire('عاش! 🔥', 'أخدت 10 نقاط رصيد دائم', 'success');
+                }
+            });
+        }
+
+        function deleteTask(i) {
+            tasks.splice(i, 1);
+            saveT();
+            loadT();
+        }
+
+        function addTask() {
+            const inp = document.getElementById('tInput'); if(!inp.value) return;
+            tasks.push({text: inp.value, done: false}); saveT(); inp.value = ""; loadT();
+        }
+        function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
+
+        // --- باقي الخدمات ---
         async function loadQ() {
             const list = document.getElementById('quranList'); if(list.innerHTML !== "") return;
             const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
-            list.innerHTML = data.data.map(s => `<div class="task-item" onclick="window.open('https://quran.com/${s.number}','_blank')"><span>${s.name}</span><i class="fas fa-play-circle"></i></div>`).join('');
+            list.innerHTML = data.data.map(s => `<div class="task-item" onclick="playSurah(${s.number})"><span>${s.name}</span><i class="fas fa-play-circle" style="color:var(--accent)"></i></div>`).join('');
         }
+        function playSurah(id) {
+            const bar = document.getElementById('playerBar'); const audio = document.getElementById('mainAudio');
+            audio.src = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${id}.mp3`;
+            bar.style.display = 'flex'; audio.play();
+        }
+        function stopAudio() { document.getElementById('mainAudio').pause(); document.getElementById('playerBar').style.display = 'none'; }
+
         function loadS() {
-            const subjects = ["عربي", "إنجليزي", "فيزياء", "كيمياء", "أحياء", "رياضيات"];
-            document.getElementById('sGrid').innerHTML = subjects.map(s => `<div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} الصف ${student.year} ثانوي 2026','_blank')"><h4>${s}</h4></div>`).join('');
+            const user = getStudentData();
+            const yearInfo = user.year || "";
+            const branchInfo = user.branch || "";
+            const subs = ["عربي", "إنجليزي", "فيزياء", "كيمياء", "أحياء", "رياضيات", "تاريخ", "جغرافيا"];
+            document.getElementById('sGrid').innerHTML = subs.map(s => `
+                <div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} ${yearInfo} ${branchInfo}','_blank')">
+                    <h4>${s}</h4>
+                </div>
+            `).join('');
         }
 
+        function loadNotifs() {
+            const undone = tasks.filter(t => !t.done);
+            let html = "";
+            if(undone.length > 0) {
+                html += `<div class="notif-warning">معاك مهمة مش مخلصها يا بطيخة 🍉 (${undone.length})</div>`;
+                html += undone.map(t => `<div class="task-item">${t.text}</div>`).join('');
+            } else {
+                html = `<div style="text-align:center; opacity:0.5; margin-top:50px;"><i class="fas fa-check-double" style="font-size:50px; color:var(--accent);"></i><p>كلو تمام يا بطيخة!</p></div>`;
+            }
+            document.getElementById('notifContent').innerHTML = html;
+        }
+
+        function updateBadge() {
+            const count = tasks.filter(t => !t.done).length;
+            const b = document.getElementById('notifBadge');
+            b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none';
+        }
+        function logout() { localStorage.clear(); location.reload(); }
+
+        loadProfileData();
         updateBadge();
         syncTimer();
     </script>
 </body>
 </html>
+
