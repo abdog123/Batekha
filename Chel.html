@@ -134,7 +134,8 @@
 
         // 2. دالة إرسال الطلب (تستخدم رقم المستخدم الحالي لمنع undefined)
         async function finalSendRequest() {
-            const myPhone = currentUser.phone;
+            const myPhone = currentUser.phone || currentUser.phoneNum || localStorage.getItem('userPhone');
+;
             if(!myPhone || myPhone === "undefined") {
                 return Swal.fire('خطأ', 'لم يتم التعرف على حسابك، سجل دخول مجدداً', 'error');
             }
