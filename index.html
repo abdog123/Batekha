@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تسجيل الطلاب</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginSection" class="form-card">
+        <h2>تسجيل الدخول</h2>
+        <form id="loginForm">
+            <input type="tel" id="logPhone" placeholder="رقم الموبايل" required>
+            <div class="password-wrapper">
+                <input type="password" id="logPass" placeholder="كلمة المرور" required>
+                <button type="button" class="toggle-pass" onclick="togglePass('logPass')">👁️</button>
+            </div>
+            <button type="submit" id="loginBtn">دخول</button>
+            <p>ليس لديك حساب؟ <a href="#" onclick="toggleForms()">إنشاء حساب جديد</a></p>
+        </form>
+    </div>
+
+    <div id="signupSection" class="form-card hidden">
+        <h2>إنشاء حساب جديد</h2>
+        <form id="signupForm">
+            <input type="text" id="newName" placeholder="الاسم الكامل" required>
+            <input type="tel" id="newPhone" placeholder="رقم الموبايل" required>
+            <div class="password-wrapper">
+                <input type="password" id="newPass" placeholder="كلمة المرور" required>
+                <button type="button" class="toggle-pass" onclick="togglePass('newPass')">👁️</button>
+            </div>
+            <select id="yearSelect" onchange="updateSpecialization()" required>
+                <option value="">اختر السنة الدراسية</option>
+                <option value="1">الصف الأول الثانوي</option>
+                <option value="2">الصف الثاني الثانوي</option>
+                <option value="3">الصف الثالث الثانوي</option>
+            </select>
+            <div id="specGroup" class="hidden">
+                <select id="specSelect">
+                    <option value="عام">اختر التخصص</option>
+                </select>
+            </div>
+            <button type="submit" id="regBtn">إنشاء حساب</button>
+            <p>لديك حساب بالفعل؟ <a href="#" onclick="toggleForms()">سجل دخولك</a></p>
+        </form>
+    </div>
+
+    <div id="dashboardSection" class="form-card hidden">
+        <h2 id="welcomeMsg">أهلاً بك</h2>
+        <div class="dashboard-content">
+            <p>تم تسجيل دخولك بنجاح إلى المنصة التعليمية.</p>
+            <button onclick="location.reload()">تسجيل الخروج</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
