@@ -12,80 +12,101 @@
         .sub-page { display: none; max-width: 500px; margin: auto; animation: fadeIn 0.3s; }
         .active-section { display: block; }
         .fire-title { font-size: 28px; font-weight: 900; text-align: center; color: var(--fire); margin: 20px 0; }
-        .main-btn { background: var(--card); border: 2px solid var(--fire); padding: 18px; border-radius: 15px; color: white; width: 100%; font-weight: bold; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .main-btn { background: var(--card); border: 2px solid var(--fire); padding: 18px; border-radius: 15px; color: white; width: 100%; font-weight: bold; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-right: 4px solid var(--fire); backdrop-filter: blur(5px); }
         input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #000; color: white; margin-bottom: 10px; outline: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .req-btn { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        /* استايل شاشة الربط الوهمية */
+        #setupOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; padding:20px; }
     </style>
 </head>
 <body>
 
+    <div id="setupOverlay">
+        <div class="card" style="max-width:400px; border:2px solid var(--fire); text-align:center;">
+            <h3 style="color:var(--fire);">تفعيل ميزة الأصدقاء ✨</h3>
+            <p style="font-size:14px; opacity:0.8;">من فضلك أكد بياناتك لتتمكن من إرسال واستقبال التحديات مع أصدقائك:</p>
+            <input type="text" id="setupName" placeholder="الاسم الذي سيظهر لأصدقائك">
+            <input type="tel" id="setupPhone" placeholder="رقم هاتفك المسجل به">
+            <button onclick="saveSetupData()" style="background:var(--fire); border:none; width:100%; padding:15px; border-radius:10px; color:white; font-weight:bold; cursor:pointer;">حفظ وتفعيل الحساب 🔥</button>
+        </div>
+    </div>
+
     <div id="mainMenu" class="sub-page active-section">
         <div class="fire-title">ساحة التحدي 🔥</div>
-        <p id="welcomeMsg" style="text-align: center; color: var(--accent); font-weight: bold; min-height: 20px;"></p>
+        <p id="welcomeMsg" style="text-align: center; color: var(--accent); font-weight: bold;"></p>
         
         <button class="main-btn" onclick="showSection('friendsPage'); fetchFriendsData();">
             <i class="fas fa-users"></i> الأصدقاء والطلبات
         </button>
-        
         <button class="main-btn" onclick="window.location.href='dash_boared.html'" style="border-color:#555;">
             <i class="fas fa-home"></i> العودة للرئيسية
         </button>
     </div>
 
     <div id="friendsPage" class="sub-page">
-        <div onclick="showSection('mainMenu')" style="color:var(--fire); cursor:pointer; margin-bottom:20px; font-weight: bold;">
-            <i class="fas fa-arrow-right"></i> رجوع
-        </div>
+        <div onclick="showSection('mainMenu')" style="color:var(--fire); cursor:pointer; margin-bottom:20px;"><i class="fas fa-arrow-right"></i> رجوع</div>
         
         <div class="card">
-            <p style="margin-top:0;">إضافة صديق جديد:</p>
+            <p>إضافة صديق جديد:</p>
             <div style="display: flex; gap: 5px;">
                 <input type="tel" id="friendPhone" placeholder="رقم هاتف الصديق">
-                <button onclick="searchFriend()" style="background:var(--fire); border:none; padding:10px; border-radius:10px; color:white; width:50px; cursor:pointer;">
-                    <i class="fas fa-search"></i>
-                </button>
+                <button onclick="searchFriend()" style="background:var(--fire); border:none; padding:10px; border-radius:10px; color:white;"><i class="fas fa-search"></i></button>
             </div>
-            
             <div id="searchResult" style="display:none; margin-top:15px; border-top:1px solid #333; padding-top:10px;">
-                <p id="foundName" style="color:var(--accent); font-weight:bold; margin-bottom:10px;"></p>
-                <button id="sendReqBtn" onclick="sendFriendRequest()" style="background:var(--accent); border:none; width:100%; padding:12px; border-radius:8px; font-weight:bold; color:black; cursor:pointer;">
-                    إرسال طلب صداقة
-                </button>
+                <p id="foundName" style="color:var(--accent); font-weight:bold;"></p>
+                <button id="sendReqBtn" onclick="sendFriendRequest()" style="background:var(--accent); border:none; width:100%; padding:12px; border-radius:8px; font-weight:bold; color:black;">إرسال طلب صداقة</button>
             </div>
         </div>
 
-        <h4 style="border-bottom:1px solid var(--fire); padding-bottom:5px; color:var(--fire);"><i class="fas fa-envelope-open-text"></i> طلبات واردة</h4>
+        <h4 style="border-bottom:1px solid var(--fire); padding-bottom:5px; color:var(--fire);">طلبات واردة</h4>
         <div id="receivedList"></div>
         
-        <h4 style="border-bottom:1px solid var(--accent); padding-bottom:5px; margin-top:20px; color:var(--accent);"><i class="fas fa-user-friends"></i> أصدقائي</h4>
+        <h4 style="border-bottom:1px solid var(--accent); padding-bottom:5px; margin-top:20px; color:var(--accent);">أصدقائي</h4>
         <div id="friendsList"></div>
     </div>
 
     <script>
-        // الرابط الجديد الخاص بك
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbyADgRe1CENcVwR6-Ckij0nfn8r_8mDBD0eD8_MOTMAE0mYC6F-KbcqY8QwDVgm8gCI/exec";
-        
         let lastFoundPhone = "";
 
-        // وظيفة جلب بياناتك (المرسل)
-        function getMyData() {
+        // 1. فحص البيانات عند التحميل
+        window.onload = function() {
+            checkUserAuth();
+        };
+
+        function checkUserAuth() {
             const stored = JSON.parse(localStorage.getItem('activeStudent')) || {};
-            return {
-                phone: stored.phone || localStorage.getItem('userPhone') || "",
-                name: stored.name || "بطل"
-            };
+            const phone = stored.phone || localStorage.getItem('userPhone') || "";
+            
+            if (!phone || phone === "undefined") {
+                document.getElementById('setupOverlay').style.display = 'flex';
+            } else {
+                document.getElementById('setupOverlay').style.display = 'none';
+                document.getElementById('welcomeMsg').innerText = `أهلاً بك يا ${stored.name || 'بطل'} 🍉`;
+            }
         }
 
-        window.onload = () => {
-            const me = getMyData();
-            if (me.phone) {
-                document.getElementById('welcomeMsg').innerText = `أهلاً بك يا ${me.name} 🍉`;
-            } else {
-                document.getElementById('welcomeMsg').innerHTML = `<span style="color:red; font-size:12px;">تنبيه: سجل دخولك من الصفحة الرئيسية</span>`;
+        // 2. حفظ بيانات الشاشة الوهمية
+        function saveSetupData() {
+            let name = document.getElementById('setupName').value.trim();
+            let phone = document.getElementById('setupPhone').value.trim();
+
+            if (name.length < 3 || phone.length < 10) {
+                return Swal.fire('بيانات ناقصة', 'يرجى إدخال الاسم ورقم الهاتف بشكل صحيح', 'warning');
             }
-        };
+
+            if (phone.startsWith('1') && phone.length === 10) phone = '0' + phone;
+
+            const studentData = { name: name, phone: phone };
+            localStorage.setItem('activeStudent', JSON.stringify(studentData));
+            localStorage.setItem('userPhone', phone);
+
+            Swal.fire('تم التفعيل!', 'حسابك جاهز الآن للتحديات', 'success').then(() => {
+                checkUserAuth();
+            });
+        }
 
         function showSection(id) {
             document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active-section'));
@@ -94,8 +115,8 @@
 
         async function searchFriend() {
             let phoneInput = document.getElementById('friendPhone').value.trim();
-            if(!phoneInput) return;
             if (phoneInput.startsWith('1') && phoneInput.length === 10) phoneInput = '0' + phoneInput;
+            if(!phoneInput) return;
 
             Swal.fire({ title: 'جاري البحث...', didOpen: () => Swal.showLoading() });
             try {
@@ -108,68 +129,68 @@
                     document.getElementById('foundName').innerText = "تم العثور على: " + data.user.name;
                     lastFoundPhone = data.user.phone;
                 } else {
-                    Swal.fire('غير موجود', 'الرقم غير مسجل', 'error');
+                    Swal.fire('غير موجود', 'هذا الرقم غير مسجل', 'error');
                 }
             } catch(e) { Swal.fire('خطأ', 'فشل الاتصال بالسيرفر', 'error'); }
         }
 
         async function sendFriendRequest() {
-            const me = getMyData();
-            let senderPhone = me.phone;
+            const stored = JSON.parse(localStorage.getItem('activeStudent')) || {};
+            const myPhone = stored.phone || localStorage.getItem('userPhone');
 
-            if(!senderPhone || senderPhone === "undefined") {
-                return Swal.fire('خطأ', 'لم نجد رقمك، يرجى تسجيل الدخول مرة أخرى', 'error');
+            if(!myPhone) {
+                document.getElementById('setupOverlay').style.display = 'flex';
+                return;
             }
 
             const btn = document.getElementById('sendReqBtn');
             btn.disabled = true;
-            btn.innerText = "جاري الإرسال...";
 
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=addFriend&sender=${senderPhone}&receiver=${lastFoundPhone}`);
+                const res = await fetch(`${SCRIPT_URL}?action=addFriend&sender=${myPhone}&receiver=${lastFoundPhone}`);
                 const data = await res.json();
                 
                 if(data.status === 'success') {
-                    Swal.fire('تم!', 'تم تسجيل الطلب في الشيت', 'success');
+                    Swal.fire('تم!', 'تم إرسال طلب الصداقة بنجاح', 'success');
                     document.getElementById('searchResult').style.display = 'none';
                 } else {
                     Swal.fire('تنبيه', data.message, 'info');
                 }
             } catch(e) { Swal.fire('خطأ', 'حدثت مشكلة في الإرسال', 'error'); }
-            
             btn.disabled = false;
-            btn.innerText = "إرسال طلب صداقة";
         }
 
         async function fetchFriendsData() {
-            const me = getMyData();
-            if(!me.phone) return;
-            
+            const stored = JSON.parse(localStorage.getItem('activeStudent')) || {};
+            const myPhone = stored.phone || localStorage.getItem('userPhone');
+            if(!myPhone) return;
+
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${me.phone}`);
+                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${myPhone}`);
                 const data = await res.json();
                 
                 document.getElementById('friendsList').innerHTML = data.friends.length ? data.friends.map(f => `
-                    <div class="card" style="border-color:var(--accent)">✅ ${f.name}</div>
+                    <div class="card">✅ ${f.name}</div>
                 `).join('') : '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>';
 
                 document.getElementById('receivedList').innerHTML = data.received.length ? data.received.map(r => `
                     <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>${r.name}</span>
                         <div>
-                            <button class="req-btn" onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black;">قبول</button>
-                            <button class="req-btn" onclick="respond('${r.phone}', 'reject')" style="background:rgba(255,0,0,0.1); color:red; margin-right:5px;">رفض</button>
+                            <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); border:none; padding:8px 15px; border-radius:8px; color:black; font-weight:bold;">قبول</button>
+                            <button onclick="respond('${r.phone}', 'reject')" style="background:rgba(255,0,0,0.1); border:none; padding:8px 15px; border-radius:8px; color:red; margin-right:5px;">رفض</button>
                         </div>
                     </div>
                 `).join('') : '<p style="text-align:center; opacity:0.5;">لا توجد طلبات</p>';
-            } catch(e) { console.error("Load Error"); }
+            } catch(e) { console.error("Error loading friends"); }
         }
 
         async function respond(target, action) {
-            const me = getMyData();
-            Swal.fire({ title: 'جاري المعالجة...', didOpen: () => Swal.showLoading() });
+            const stored = JSON.parse(localStorage.getItem('activeStudent')) || {};
+            const myPhone = stored.phone || localStorage.getItem('userPhone');
+            Swal.fire({ title: 'جاري الحفظ...', didOpen: () => Swal.showLoading() });
             try {
-                await fetch(`${SCRIPT_URL}?action=respondRequest&user=${me.phone}&target=${target}&status=${action}`);
+                await fetch(`${SCRIPT_URL}?action=respondRequest&user=${myPhone}&target=${target}&status=${action}`);
                 Swal.fire('تم!', '', 'success');
                 fetchFriendsData();
             } catch(e) { Swal.fire('خطأ', 'فشل التحديث', 'error'); }
@@ -177,4 +198,3 @@
     </script>
 </body>
 </html>
-
