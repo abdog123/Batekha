@@ -7,22 +7,16 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #3498db; --dark: #0a0a0a; --accent: #2ed573; --card: rgba(255,255,255,0.08); --fire: #ff4d00; }
+        :root { --primary: #3498db; --dark: #0a0a0a; --accent: #2ed573; --card: rgba(255,255,255,0.08); }
         body { background: var(--dark); color: #fff; margin: 0; padding: 15px; font-family: 'Segoe UI', sans-serif; text-align: right; }
-        
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); animation: fadeIn 0.5s ease; }
-        
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
         .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); border: none; padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.3s; }
-        .main-btn:disabled { background: #444 !important; cursor: not-allowed; transform: none !important; }
-        
+        .main-btn:disabled { background: #444 !important; cursor: not-allowed; }
         .sub-page { display: none; max-width: 500px; margin: auto; }
         .active-section { display: block; }
-        
         input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
-        
         #setupOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; padding:20px; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .refresh-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; margin-bottom: 10px; float: left; }
     </style>
 </head>
 <body>
@@ -30,8 +24,8 @@
     <div id="setupOverlay">
         <div class="card" style="max-width:400px; text-align:center; border: 1px solid var(--primary);">
             <div style="font-size: 50px;">👤</div>
-            <h2 style="color:var(--primary);">إعداد ملف الصداقة</h2>
-            <p style="font-size: 14px; opacity: 0.8;">أهلاً بك! يرجى تأكيد بياناتك لمرة واحدة فقط لتتمكن من إضافة أصدقائك والتفاعل معهم.</p>
+            <h2 style="color:var(--primary);">تفعيل نظام الأصدقاء</h2>
+            <p>يرجى تأكيد اسمك ورقمك لمرة واحدة لربط حسابك بالنظام.</p>
             <input type="text" id="setupName" placeholder="الاسم الذي سيظهر للأصدقاء">
             <input type="tel" id="setupPhone" placeholder="رقم هاتفك المسجل به">
             <button id="setupBtn" onclick="saveSetupData()" class="main-btn">تفعيل الميزة الآن ✨</button>
@@ -40,44 +34,37 @@
 
     <div id="mainMenu" class="sub-page active-section">
         <div style="text-align:center; font-size:28px; font-weight:900; color:var(--primary); margin:25px 0;">ساحة الأصدقاء 🤝</div>
-        
         <div id="welcomeCard" class="card" style="text-align:center; border-left: 4px solid var(--accent); display:none;">
             <span id="welcomeMsg" style="color:var(--accent); font-weight:bold;"></span>
         </div>
-        
         <button class="main-btn" onclick="showSection('friendsPage'); fetchFriendsData();">
-            <i class="fas fa-user-friends"></i> نظام الأصدقاء والطلبات
+            <i class="fas fa-user-friends"></i> دخول ساحة الأصدقاء
         </button>
-        
-        <button class="main-btn" onclick="window.location.href='dash_boared.html'" style="background:none; border:1px solid #444; margin-top:10px;">
-            <i class="fas fa-home"></i> العودة للرئيسية
-        </button>
+        <button class="main-btn" onclick="window.location.href='dash_boared.html'" style="background:none; border:1px solid #444; margin-top:10px;">العودة للرئيسية</button>
     </div>
 
     <div id="friendsPage" class="sub-page">
-        <div onclick="showSection('mainMenu')" style="color:var(--primary); cursor:pointer; margin-bottom:20px; font-weight:bold;">
-            <i class="fas fa-chevron-right"></i> رجوع للمنيو
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div onclick="showSection('mainMenu')" style="color:var(--primary); cursor:pointer; font-weight:bold;"><i class="fas fa-chevron-right"></i> رجوع</div>
+            <button class="refresh-btn" onclick="fetchFriendsData()"><i class="fas fa-sync-alt"></i> تحديث القوائم</button>
         </div>
         
         <div class="card">
-            <h4 style="margin-top:0;"><i class="fas fa-search"></i> البحث عن صديق</h4>
+            <h4><i class="fas fa-search"></i> إضافة صديق</h4>
             <div style="display: flex; gap: 10px;">
-                <input type="tel" id="friendPhone" placeholder="أدخل رقم هاتف الصديق" style="margin-bottom:0;">
-                <button onclick="searchFriend()" style="background:var(--primary); border:none; width:60px; border-radius:12px; color:white; cursor:pointer;">
-                    <i class="fas fa-search"></i>
-                </button>
+                <input type="tel" id="friendPhone" placeholder="رقم هاتف الصديق" style="margin-bottom:0;">
+                <button onclick="searchFriend()" style="background:var(--primary); border:none; width:60px; border-radius:12px; color:white;"><i class="fas fa-search"></i></button>
             </div>
-            
             <div id="searchResult" style="display:none; margin-top:20px; border-top:1px solid #333; padding-top:15px;">
                 <p id="foundName" style="color:var(--accent); font-weight:bold; text-align:center;"></p>
                 <button id="sendReqBtn" onclick="sendFriendRequest()" class="main-btn" style="background:var(--accent); color:black;">إرسال طلب صداقة ➕</button>
             </div>
         </div>
 
-        <h4 style="color:var(--primary);"><i class="fas fa-envelope-open-text"></i> طلبات صداقة واردة</h4>
+        <h4 style="color:var(--primary);"><i class="fas fa-envelope-open-text"></i> طلبات واردة</h4>
         <div id="receivedList"></div>
         
-        <h4 style="color:var(--accent);"><i class="fas fa-users"></i> قائمة أصدقائي</h4>
+        <h4 style="color:var(--accent);"><i class="fas fa-users"></i> قائمة الأصدقاء</h4>
         <div id="friendsList"></div>
     </div>
 
@@ -85,16 +72,16 @@
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbyADgRe1CENcVwR6-Ckij0nfn8r_8mDBD0eD8_MOTMAE0mYC6F-KbcqY8QwDVgm8gCI/exec";
         let lastFoundPhone = "";
 
-        window.onload = function() {
-            checkUserAuth();
-        };
+        window.onload = function() { checkUserAuth(); };
 
-        // فحص حالة التسجيل لعدم إظهار الشاشة مرتين
+        // حل مشكلة تكرار الرسالة عند تسجيل الدخول
         function checkUserAuth() {
             const stored = JSON.parse(localStorage.getItem('activeStudent')) || {};
             const phone = stored.phone || localStorage.getItem('userPhone') || "";
-            
-            if (phone && phone !== "undefined") {
+            // نتحقق إذا كان المستخدم سبق وفعل الحساب من قبل
+            const isActivated = localStorage.getItem('isFriendSystemActive');
+
+            if (phone && phone !== "undefined" && isActivated === "true") {
                 document.getElementById('setupOverlay').style.display = 'none';
                 document.getElementById('welcomeCard').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `أهلاً بك يا ${stored.name} ✨`;
@@ -103,27 +90,24 @@
             }
         }
 
-        // حفظ البيانات وتحويل حالة الزر
         async function saveSetupData() {
             const btn = document.getElementById('setupBtn');
             const name = document.getElementById('setupName').value.trim();
             let phone = document.getElementById('setupPhone').value.trim();
 
-            if (name.length < 3 || phone.length < 10) {
-                return Swal.fire('بيانات غير مكتملة', 'يرجى التأكد من الاسم والرقم', 'warning');
-            }
+            if (name.length < 3 || phone.length < 10) return Swal.fire('خطأ', 'بيانات غير مكتملة', 'error');
 
             btn.disabled = true;
-            btn.innerText = "⏳ جاري حفظ البيانات...";
+            btn.innerText = "⏳ جاري تفعيل الميزة...";
 
             if (phone.startsWith('1') && phone.length === 10) phone = '0' + phone;
 
-            const studentData = { name: name, phone: phone };
-            localStorage.setItem('activeStudent', JSON.stringify(studentData));
+            localStorage.setItem('activeStudent', JSON.stringify({ name: name, phone: phone }));
             localStorage.setItem('userPhone', phone);
+            localStorage.setItem('isFriendSystemActive', "true"); // علامة التفعيل الأبدية
 
             setTimeout(() => {
-                Swal.fire('تم بنجاح', 'تم تفعيل نظام الأصدقاء في حسابك', 'success');
+                Swal.fire('تم بنجاح', 'لن تظهر لك هذه الرسالة مرة أخرى', 'success');
                 checkUserAuth();
             }, 1000);
         }
@@ -134,45 +118,35 @@
         }
 
         async function searchFriend() {
-            let phoneInput = document.getElementById('friendPhone').value.trim();
-            if (phoneInput.startsWith('1') && phoneInput.length === 10) phoneInput = '0' + phoneInput;
-            if(!phoneInput) return;
-
+            let p = document.getElementById('friendPhone').value.trim();
+            if (p.startsWith('1') && p.length === 10) p = '0' + p;
+            if(!p) return;
             Swal.fire({ title: 'جاري البحث...', didOpen: () => Swal.showLoading() });
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=searchUser&phone=${phoneInput}`);
+                const res = await fetch(`${SCRIPT_URL}?action=searchUser&phone=${p}`);
                 const data = await res.json();
                 Swal.close();
-
                 if(data.status === 'success') {
                     document.getElementById('searchResult').style.display = 'block';
                     document.getElementById('foundName').innerText = "👤 المستخدم: " + data.user.name;
                     lastFoundPhone = data.user.phone;
-                } else {
-                    Swal.fire('عفواً', 'هذا الرقم غير موجود في النظام', 'info');
-                }
-            } catch(e) { Swal.fire('خطأ', 'تأكد من اتصال الإنترنت', 'error'); }
+                } else { Swal.fire('عفواً', 'غير مسجل', 'info'); }
+            } catch(e) { Swal.fire('خطأ', 'فشل الاتصال', 'error'); }
         }
 
         async function sendFriendRequest() {
             const me = JSON.parse(localStorage.getItem('activeStudent')) || {};
             const btn = document.getElementById('sendReqBtn');
-            
             btn.disabled = true;
-            btn.innerText = "⏳ جاري إرسال الطلب...";
-
+            btn.innerText = "⏳ جاري الإرسال...";
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=addFriend&sender=${me.phone}&receiver=${lastFoundPhone}`);
                 const data = await res.json();
-                
                 if(data.status === 'success') {
-                    Swal.fire('تم الإرسال', 'تم إرسال طلب الصداقة بنجاح', 'success');
+                    Swal.fire('تم', 'أرسلنا طلبك بنجاح', 'success');
                     document.getElementById('searchResult').style.display = 'none';
-                } else {
-                    Swal.fire('تنبيه', data.message, 'info');
-                }
-            } catch(e) { Swal.fire('خطأ', 'حدث خطأ أثناء الإرسال', 'error'); }
-            
+                } else { Swal.fire('تنبيه', data.message, 'info'); }
+            } catch(e) { Swal.fire('خطأ', 'فشل الإرسال', 'error'); }
             btn.disabled = false;
             btn.innerText = "إرسال طلب صداقة ➕";
         }
@@ -180,38 +154,40 @@
         async function fetchFriendsData() {
             const me = JSON.parse(localStorage.getItem('activeStudent')) || {};
             if(!me.phone) return;
+            
+            // إضافة حركة بسيطة للزرار عشان الطالب يحس إنه حدث
+            const refreshIcon = document.querySelector('.refresh-btn i');
+            if(refreshIcon) refreshIcon.classList.add('fa-spin');
 
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${me.phone}`);
                 const data = await res.json();
                 
                 document.getElementById('friendsList').innerHTML = data.friends.length ? data.friends.map(f => `
-                    <div class="card" style="border-right: 4px solid var(--accent); display:flex; align-items:center; gap:10px;">
-                        <i class="fas fa-check-circle" style="color:var(--accent)"></i>
-                        <span>${f.name}</span>
-                    </div>
-                `).join('') : '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء مضافون حالياً</p>';
+                    <div class="card" style="border-right: 4px solid var(--accent);">✅ ${f.name}</div>
+                `).join('') : '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>';
 
                 document.getElementById('receivedList').innerHTML = data.received.length ? data.received.map(r => `
                     <div class="card" style="border-right: 4px solid var(--primary);">
-                        <p style="margin-top:0;"><b>${r.name}</b> أرسل لك طلب صداقة</p>
+                        <p><b>${r.name}</b> طلب صداقتك</p>
                         <div style="display:flex; gap:10px;">
-                            <button onclick="respond('${r.phone}', 'accept')" style="flex:1; background:var(--accent); border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;">قبول</button>
-                            <button onclick="respond('${r.phone}', 'reject')" style="flex:1; background:rgba(255,0,0,0.1); border:1px solid red; padding:10px; border-radius:10px; color:red; cursor:pointer;">رفض</button>
+                            <button onclick="respond('${r.phone}', 'accept')" style="flex:1; background:var(--accent); border:none; padding:10px; border-radius:10px; font-weight:bold;">قبول</button>
+                            <button onclick="respond('${r.phone}', 'reject')" style="flex:1; background:rgba(255,0,0,0.1); border:1px solid red; padding:10px; border-radius:10px; color:red;">رفض</button>
                         </div>
                     </div>
-                `).join('') : '<p style="text-align:center; opacity:0.5;">لا توجد طلبات واردة</p>';
-            } catch(e) { console.error("Data loading error"); }
+                `).join('') : '<p style="text-align:center; opacity:0.5;">لا توجد طلبات</p>';
+            } catch(e) { console.error("Load Error"); }
+            if(refreshIcon) refreshIcon.classList.remove('fa-spin');
         }
 
         async function respond(target, action) {
             const me = JSON.parse(localStorage.getItem('activeStudent')) || {};
-            Swal.fire({ title: 'جاري المعالجة...', didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'جاري التنفيذ...', didOpen: () => Swal.showLoading() });
             try {
                 await fetch(`${SCRIPT_URL}?action=respondRequest&user=${me.phone}&target=${target}&status=${action}`);
-                Swal.fire('تم', 'تم تحديث قائمة الأصدقاء', 'success');
+                Swal.fire('تم', 'تم تحديث القوائم', 'success');
                 fetchFriendsData();
-            } catch(e) { Swal.fire('خطأ', 'تعذر تحديث البيانات', 'error'); }
+            } catch(e) { Swal.fire('خطأ', 'فشل التحديث', 'error'); }
         }
     </script>
 </body>
