@@ -3,57 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة بطيختي 🍉 - النسخة الكاملة</title>
+    <title>منصة بطيختي 🍉 - النسخة النهائية</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main-bg: #0f121d; --card-bg: #1a1f2e; --accent: #2ed573; --primary: #764ba2; --text: #ffffff; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--main-bg); color: var(--text); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
+        body { background: var(--main-bg); color: var(--text); margin: 0; padding-bottom: 30px; overflow-x: hidden; }
 
-        /* الهيدر والاشعارات */
         .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #161a26; position: sticky; top: 0; z-index: 1000; }
         .nav-icons { display: flex; gap: 12px; align-items: center; }
         .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
         .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
 
-        /* الصفحات */
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
         .back-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--accent); cursor: pointer; font-weight: bold; }
         
-        /* البطاقات */
         .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; }
         .tool-card { background: var(--card-bg); padding: 25px; border-radius: 22px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
         .tool-card i { font-size: 30px; color: var(--accent); margin-bottom: 12px; display: block; }
         .challenge-card { background: linear-gradient(45deg, #f093fb, #f5576c); grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px; }
 
-        /* البروفايل */
-        .profile-card { background: var(--card-bg); border-radius: 30px; padding: 25px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
+        .advice-section { margin: 20px 10px; background: linear-gradient(135deg, #2c3e50, #000000); padding: 20px; border-radius: 25px; border: 1px solid rgba(46, 213, 115, 0.3); position: relative; overflow: hidden; }
+        .advice-title { color: var(--accent); font-size: 14px; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .advice-text { font-size: 15px; line-height: 1.6; color: #eee; }
+
+        .profile-card { background: var(--card-bg); border-radius: 30px; padding: 25px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
         .profile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(45deg, var(--primary), var(--accent)); z-index: 0; }
         .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; z-index: 1; margin-top: 10px; background: #2a3245; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
         .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); display: block; }
 
-        /* العداد */
-        .timer-container { position: relative; width: 220px; height: 220px; margin: 20px auto; }
-        .timer-svg { transform: rotate(-90deg); width: 220px; height: 220px; }
-        .timer-circle-bg { fill: none; stroke: #2a3245; stroke-width: 8; }
-        .timer-circle-progress { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 628; stroke-dashoffset: 628; transition: 0.3s; }
-        .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 45px; font-weight: bold; font-family: monospace; }
-
-        /* شريط التنقل السفلي */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #161a26; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2a3245; z-index: 1000; }
-        .nav-item { text-align: center; color: #5d6778; font-size: 11px; flex: 1; cursor: pointer; }
-        .nav-item.active { color: var(--accent); }
-        .nav-center { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; color: white; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
+        /* --- تصميم العداد الجديد --- */
+        .timer-full-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75vh; }
+        .timer-container { position: relative; width: 260px; height: 260px; margin: 10px auto; }
+        .timer-svg { transform: rotate(-90deg); width: 260px; height: 260px; }
+        .timer-circle-bg { fill: none; stroke: #2a3245; stroke-width: 10; }
+        .timer-circle-progress { fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 816; stroke-dashoffset: 816; transition: 0.3s; }
+        .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 55px; font-weight: bold; font-family: monospace; }
+        .time-selector { display: flex; gap: 8px; margin-bottom: 25px; }
+        .time-btn { background: #161a26; border: 1px solid #2a3245; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .time-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+        /* ----------------------- */
 
         .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
-        .notif-warning { background: #ff4757; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; text-align: center; }
-
-        .player-bar { position: fixed; bottom: 85px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; }
-        .player-bar audio { height: 30px; flex: 1; }
+        .player-bar { position: fixed; bottom: 20px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .player-bar audio { flex: 1; height: 30px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -64,7 +61,7 @@
     <audio id="cheerSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
 
     <div class="top-nav">
-        <h3 style="margin:0;">بطيختي 🍉</h3>
+        <h3 onclick="goHome()" style="cursor:pointer; margin:0;">بطيختي 🍉</h3>
         <div class="nav-icons">
             <div class="icon-circle" onclick="openPage('notifPage')"><i class="fas fa-bell"></i><span class="badge" id="notifBadge">0</span></div>
             <div class="icon-circle" onclick="openPage('profilePage')"><i class="fas fa-user"></i></div>
@@ -82,22 +79,21 @@
             <div class="tool-card" onclick="openPage('tasksPage')"><i class="fas fa-check-circle"></i><h4>المهام</h4></div>
             <div class="tool-card" onclick="openPage('timerPage')"><i class="fas fa-stopwatch"></i><h4>العداد</h4></div>
         </div>
+        <div class="advice-section">
+            <div class="advice-title"><i class="fas fa-lightbulb"></i> نصيحة اليوم للبطيخة الشاطرة</div>
+            <div class="advice-text" id="dailyAdvice">حمل النصيحة...</div>
+        </div>
     </div>
 
     <div id="profilePage" class="page">
         <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div class="profile-card">
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img">
-            <div class="profile-info">
-                <h2 id="pName">طالب بطيخة</h2>
-                <p id="pYearText">--</p>
-                <span id="pBranchText" style="font-size: 12px; color: #888;">--</span>
-            </div>
+            <h2 id="pName">--</h2>
+            <p id="pYearText">--</p>
             <div class="stats-grid">
-                <div class="stat-box"><span class="stat-num" id="statDone">0</span><span class="stat-txt">إنجاز دائم</span></div>
-                <div class="stat-box"><span class="stat-num" id="statPoints">0</span><span class="stat-txt">نقاطي</span></div>
-                <div class="stat-box"><span class="stat-num">#1</span><span class="stat-txt">الترتيب</span></div>
-                <div class="stat-box"><span class="stat-num" id="statLevel">بطيخة</span><span class="stat-txt">المستوى</span></div>
+                <div class="stat-box"><span class="stat-num" id="statDone">0</span><span>إنجاز دائم</span></div>
+                <div class="stat-box"><span class="stat-num" id="statPoints">0</span><span>نقاطي الكلية</span></div>
             </div>
             <button onclick="logout()" style="background:#ff4757; color:white; border:none; padding:15px; width:100%; border-radius:15px; margin-top:20px; font-weight:bold; cursor:pointer;">تسجيل الخروج</button>
         </div>
@@ -105,17 +101,24 @@
 
     <div id="timerPage" class="page">
         <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
-        <div style="text-align:center;">
-            <p>وقت التركيز (بالدقائق):</p>
-            <input type="number" id="customMin" value="25" oninput="syncTimer()" style="background:#1a1f2e; border:1px solid var(--primary); color:white; padding:12px; border-radius:12px; width:100px; text-align:center;">
-        </div>
-        <div class="timer-container">
-            <svg class="timer-svg"><circle class="timer-circle-bg" cx="110" cy="110" r="100"></circle><circle id="progressCircle" class="timer-circle-progress" cx="110" cy="110" r="100"></circle></svg>
-            <div class="timer-text" id="tDisplay">25:00</div>
-        </div>
-        <div style="text-align:center; display: flex; justify-content: center; gap: 15px;">
-            <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold; color:#000;">بدء</button>
-            <button onclick="resetT()" style="background:#ff4757; border:none; padding:18px; border-radius:18px; color: white;"><i class="fas fa-redo"></i></button>
+        <div class="timer-full-page">
+            <div class="time-selector">
+                <button class="time-btn" onclick="setTimer(15)">15د</button>
+                <button class="time-btn active" id="btn25" onclick="setTimer(25)">25د</button>
+                <button class="time-btn" onclick="setTimer(45)">45د</button>
+                <button class="time-btn" onclick="setTimer(60)">60د</button>
+            </div>
+            <div class="timer-container">
+                <svg class="timer-svg">
+                    <circle class="timer-circle-bg" cx="130" cy="130" r="125"></circle>
+                    <circle id="progressCircle" class="timer-circle-progress" cx="130" cy="130" r="125"></circle>
+                </svg>
+                <div class="timer-text" id="tDisplay">25:00</div>
+            </div>
+            <div style="text-align:center; display: flex; justify-content: center; gap: 15px; margin-top: 25px;">
+                <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold; color:#000; font-size:18px;">بدء</button>
+                <button onclick="resetT()" style="background:#ff4757; border:none; padding:18px; border-radius:18px; color: white;"><i class="fas fa-redo"></i></button>
+            </div>
         </div>
     </div>
 
@@ -123,13 +126,13 @@
         <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div style="display:flex; gap:10px; margin-bottom:20px;">
             <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة؟">
-            <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px; color:#000;"><i class="fas fa-plus"></i></button>
+            <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px;"><i class="fas fa-plus"></i></button>
         </div>
         <div id="tList"></div>
     </div>
 
-    <div id="quranPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="quranList"></div></div>
     <div id="subjectsPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div></div>
+    <div id="quranPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="quranList"></div></div>
     <div id="notifPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="notifContent"></div></div>
 
     <div id="playerBar" class="player-bar">
@@ -137,32 +140,25 @@
         <i class="fas fa-times" onclick="stopAudio()" style="margin-right:10px; cursor:pointer; color:#fff;"></i>
     </div>
 
-    <div class="bottom-nav" id="mainNav">
-        <div class="nav-item active" onclick="goHome()"><i class="fas fa-home"></i><br>الرئيسية</div>
-        <div class="nav-item" onclick="openPage('subjectsPage')"><i class="fas fa-book"></i><br>المواد</div>
-        <div class="nav-item nav-center" onclick="openPage('timerPage')"><i class="fas fa-stopwatch"></i></div>
-        <div class="nav-item" onclick="openPage('quranPage')"><i class="fas fa-headphones"></i><br>القرآن</div>
-        <div class="nav-item" onclick="openPage('profilePage')"><i class="fas fa-user-circle"></i><br>بروفايل</div>
-    </div>
-
     <script>
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
 
-        function getYearName(yearNum) {
-            const years = { "1": "الأول", "2": "الثاني", "3": "الثالث" };
-            return years[String(yearNum)] || yearNum;
+        const advices = ["ابدأ يومك بصلاة الفجر، بركة اليوم تبدأ من هناك.", "المذاكرة لمدة 25 دقيقة بتركيز أفضل من 4 ساعات تشتت.", "لا تؤجل عمل اليوم إلى الغد، البطيخة الشاطرة تنجز أولاً بأول.", "اجعل لنفسك ورداً يومياً من القرآن، فإنه ينير العقل.", "تذكر دائماً فرحة أهلك يوم النتيجة، تستحق التعب!"];
+
+        function setDailyAdvice() {
+            const date = new Date().toDateString();
+            let hash = 0; for (let i = 0; i < date.length; i++) { hash = date.charCodeAt(i) + ((hash << 5) - hash); }
+            document.getElementById('dailyAdvice').innerText = advices[Math.abs(hash) % advices.length];
         }
 
-        function getStudentData() {
-            return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3", branch: "علمي علوم" };
-        }
+        function getStudentData() { return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3", branch: "علمي علوم" }; }
+        function getYearName(y) { return {"1": "الأول", "2": "الثاني", "3": "الثالث"}[String(y)] || y; }
 
         function loadProfileData() {
             const user = getStudentData();
             document.getElementById('pName').innerText = user.name;
-            document.getElementById('pYearText').innerText = `الصف ${getYearName(user.year)} الثانوي`;
-            document.getElementById('pBranchText').innerText = user.branch || "";
+            document.getElementById('pYearText').innerText = `الصف ${getYearName(user.year)} ثانوي - ${user.branch}`;
             document.getElementById('statDone').innerText = totalFinishedCount;
             document.getElementById('statPoints').innerText = totalFinishedCount * 10;
         }
@@ -170,43 +166,47 @@
         function openPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById(id).classList.add('active-page');
-            document.getElementById('mainNav').style.transform = (id === 'homePage') ? 'translateY(0)' : 'translateY(100px)';
-            
             if(id === 'profilePage') loadProfileData();
             if(id === 'tasksPage') loadT();
-            if(id === 'quranPage') loadQ();
             if(id === 'subjectsPage') loadS();
+            if(id === 'quranPage') loadQ();
             if(id === 'notifPage') loadNotifs();
             updateBadge();
         }
-
         function goHome() { openPage('homePage'); }
 
-        // --- نظام العداد (مع رسائل التنبيه) ---
+        // --- منطق العداد المحسن ---
         let timeLeft = 1500, totalTime = 1500, timerInterval = null;
-        function syncTimer() { if(!timerInterval) { timeLeft = (document.getElementById('customMin').value || 25) * 60; totalTime = timeLeft; updateUI(); } }
+        const circumference = 2 * Math.PI * 125; // 785
+        document.getElementById('progressCircle').style.strokeDasharray = circumference;
+
+        function setTimer(mins) {
+            if(timerInterval) { Swal.fire({text: 'أوقف العداد أولاً يا بطل!', icon: 'info'}); return; }
+            timeLeft = mins * 60; totalTime = timeLeft;
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateUI(); updateCircle();
+        }
+
         function toggleT() {
-            if(timerInterval) { 
-                clearInterval(timerInterval); timerInterval = null; 
-                document.getElementById('tBtn').innerText = "استكمال"; 
-            } else {
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; document.getElementById('tBtn').innerText = "استكمال"; }
+            else {
                 timerInterval = setInterval(() => {
-                    timeLeft--; updateUI();
-                    document.getElementById('progressCircle').style.strokeDashoffset = 628 - ((totalTime - timeLeft) / totalTime) * 628;
+                    timeLeft--; updateUI(); updateCircle();
                     if(timeLeft <= 0) { 
                         clearInterval(timerInterval); timerInterval = null;
                         document.getElementById('notifSound').play();
-                        Swal.fire({ title: 'انتهى الوقت! 🎉', text: 'عاش يا بطل، خد راحة شوية ويرجع كمل', icon: 'success', confirmButtonColor: '#2ed573' });
+                        Swal.fire({ title: 'انتهى الوقت! 🎉', text: 'عاش يا بطل، خد راحة شوية ويرجع كمل', icon: 'success' });
                         resetT();
                     }
-                }, 1000); 
-                document.getElementById('tBtn').innerText = "إيقاف";
+                }, 1000); document.getElementById('tBtn').innerText = "إيقاف";
             }
         }
         function updateUI() { const m = Math.floor(timeLeft/60), s = timeLeft%60; document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`; }
-        function resetT() { clearInterval(timerInterval); timerInterval = null; syncTimer(); document.getElementById('progressCircle').style.strokeDashoffset = 628; document.getElementById('tBtn').innerText = "بدء"; }
+        function updateCircle() { const offset = circumference - ((totalTime - timeLeft) / totalTime) * circumference; document.getElementById('progressCircle').style.strokeDashoffset = offset; }
+        function resetT() { clearInterval(timerInterval); timerInterval = null; timeLeft = totalTime; updateUI(); updateCircle(); document.getElementById('tBtn').innerText = "بدء"; }
 
-        // --- نظام المهام (مع الرسائل والصوت) ---
+        // --- المهام والبحث والقرآن (كما في كودك) ---
         function loadT() {
             document.getElementById('tList').innerHTML = tasks.map((t, i) => `
                 <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
@@ -220,20 +220,10 @@
         }
 
         function confirmDone(i) {
-            Swal.fire({
-                title: 'خلصت المهمة؟ 🍉',
-                text: "سيتم إضافة 10 نقاط لرصيدك الدائم",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#2ed573',
-                cancelButtonColor: '#ff4757',
-                confirmButtonText: 'نعم، تم بنجاح!',
-                cancelButtonText: 'لسه شوية'
-            }).then((result) => {
+            Swal.fire({ title: 'خلصت المهمة؟ 🍉', text: "سيتم إضافة 10 نقاط لرصيدك الدائم", icon: 'question', showCancelButton: true, confirmButtonColor: '#2ed573', confirmButtonText: 'نعم، تم بنجاح!', cancelButtonText: 'لسه شوية' }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('cheerSound').play();
-                    tasks[i].done = true;
-                    totalFinishedCount++;
+                    tasks[i].done = true; totalFinishedCount++;
                     localStorage.setItem('totalFinishedCount', totalFinishedCount);
                     saveT(); loadT();
                     Swal.fire({ title: 'عاش يا وحش! 🔥', text: 'نقاطك زادت ورصيدك محفوظ للأبد', icon: 'success', timer: 2000, showConfirmButton: false });
@@ -242,18 +232,8 @@
         }
 
         function deleteTask(i) {
-            Swal.fire({
-                title: 'حذف المهمة؟',
-                text: "لن يتم خصم أي نقاط من رصيدك الدائم",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'حذف',
-                cancelButtonText: 'إلغاء'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    tasks.splice(i, 1);
-                    saveT(); loadT();
-                }
+            Swal.fire({ title: 'حذف المهمة؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'حذف' }).then((r) => {
+                if (r.isConfirmed) { tasks.splice(i, 1); saveT(); loadT(); }
             });
         }
 
@@ -263,42 +243,21 @@
         }
         function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
 
-        // --- نظام المواد (القرار الوزاري الجديد) ---
         function loadS() {
-            const user = getStudentData();
-            const year = String(user.year);
-            const branch = (user.branch || "").trim();
+            const user = getStudentData(); const year = String(user.year); const branch = (user.branch || "").trim(); const yearName = getYearName(year);
             let subs = [];
-
-            if (year === "1") {
-                subs = ["عربي", "رياضة", "انجليزي", "علوم متكاملة", "فرنساوي", "تربية دينية", "تاريخ"];
-            } else if (year === "2") {
-                if (branch.includes("علمي")) {
-                    subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "رياضة تطبيقية", "كيمياء", "فيزياء", "تاريخ", "دين"];
-                } else {
-                    subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "تاريخ", "فلسفة", "علم نفس", "جغرافيا", "دين"];
-                }
+            if (year === "1") subs = ["عربي", "رياضة", "انجليزي", "علوم متكاملة", "فرنساوي", "تربية دينية", "تاريخ"];
+            else if (year === "2") {
+                if (branch.includes("علمي")) subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "رياضة تطبيقية", "كيمياء", "فيزياء", "تاريخ", "دين"];
+                else subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "تاريخ", "فلسفة", "علم نفس", "جغرافيا", "دين"];
             } else if (year === "3") {
-                if (branch.includes("علوم")) {
-                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الأحياء", "الكيمياء", "الفيزياء"];
-                } else if (branch.includes("رياضيات") || branch.includes("رياضه")) {
-                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الرياضيات", "الكيمياء", "الفيزياء"];
-                } else if (branch.includes("أدبي")) {
-                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "التاريخ", "الجغرافيا", "علم النفس"];
-                } else {
-                    subs = ["عربي", "انجليزي", "فيزياء", "كيمياء"];
-                }
+                if (branch.includes("علوم")) subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الأحياء", "الكيمياء", "الفيزياء"];
+                else if (branch.includes("رياض")) subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الرياضيات", "الكيمياء", "الفيزياء"];
+                else subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "التاريخ", "الجغرافيا", "علم النفس"];
             }
-
-            const yearName = getYearName(year);
-            document.getElementById('sGrid').innerHTML = subs.map(s => `
-                <div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} للصف ${yearName} الثانوي ${branch}','_blank')">
-                    <h4 style="font-size:13px;">${s}</h4>
-                </div>
-            `).join('');
+            document.getElementById('sGrid').innerHTML = subs.map(s => `<div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} للصف ${yearName} الثانوي ${branch}','_blank')"> <h4 style="font-size:13px;">${s}</h4> </div>`).join('');
         }
 
-        // --- القرآن والإشعارات ---
         async function loadQ() {
             const list = document.getElementById('quranList'); if(list.innerHTML !== "") return;
             const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
@@ -315,7 +274,7 @@
             const undone = tasks.filter(t => !t.done);
             document.getElementById('notifContent').innerHTML = undone.length > 0 ? 
                 `<div class="notif-warning">وراك ${undone.length} مهمة مستنية تخلص! 🍉</div>` + undone.map(t => `<div class="task-item">${t.text}</div>`).join('') :
-                `<div style="text-align:center; opacity:0.3; margin-top:50px;"><i class="fas fa-bell-slash" style="font-size:40px;"></i><p>مفيش إشعارات جديدة</p></div>`;
+                `<p style="text-align:center; opacity:0.5;">كلو تمام يا بطيخة!</p>`;
         }
 
         function updateBadge() {
@@ -324,27 +283,13 @@
             b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none';
         }
 
-        // --- تسجيل الخروج (مع رسالة التاكيد) ---
         function logout() {
-            Swal.fire({
-                title: 'خارج ليه يا بطيخة؟ 🍉',
-                text: "متأكد إنك عايز تخرج؟ رصيدك ونقاطك هيفضلوا محفوظين",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#2ed573',
-                cancelButtonColor: '#ff4757',
-                confirmButtonText: 'أيوه، سلام دلوقتي',
-                cancelButtonText: 'لا، خليني شوية'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    localStorage.removeItem('activeStudent');
-                    window.location.href = 'index.html'; 
-                }
+            Swal.fire({ title: 'خارج ليه يا بطيخة؟ 🍉', text: "متأكد إنك عايز تخرج؟ رصيدك ونقاطك هيفضلوا محفوظين", icon: 'warning', showCancelButton: true, confirmButtonColor: '#2ed573', cancelButtonColor: '#ff4757', confirmButtonText: 'أيوه، سلام دلوقتي', cancelButtonText: 'لا، خليني شوية' }).then((result) => {
+                if (result.isConfirmed) { localStorage.removeItem('activeStudent'); window.location.href = 'index.html'; }
             });
         }
 
-        // بدء التطبيق
-        loadProfileData(); updateBadge(); syncTimer();
+        setDailyAdvice(); updateBadge(); updateCircle();
     </script>
 </body>
 </html>
