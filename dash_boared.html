@@ -3,49 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة بطيختي 🍉 - الإصدار الوزاري الجديد</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>منصة بطيختي 🍉 - النسخة الكاملة</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --main-bg: #0f121d; --card-bg: #1a1f2e; --accent: #2ed573; --primary: #764ba2; --text: #ffffff; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--main-bg); color: var(--text); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
 
+        /* الهيدر والاشعارات */
         .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #161a26; position: sticky; top: 0; z-index: 1000; }
         .nav-icons { display: flex; gap: 12px; align-items: center; }
         .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
         .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
 
+        /* الصفحات */
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
         .back-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--accent); cursor: pointer; font-weight: bold; }
         
+        /* البطاقات */
         .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; }
         .tool-card { background: var(--card-bg); padding: 25px; border-radius: 22px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
         .tool-card i { font-size: 30px; color: var(--accent); margin-bottom: 12px; display: block; }
         .challenge-card { background: linear-gradient(45deg, #f093fb, #f5576c); grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px; }
 
+        /* البروفايل */
         .profile-card { background: var(--card-bg); border-radius: 30px; padding: 25px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
         .profile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(45deg, var(--primary), var(--accent)); z-index: 0; }
         .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; z-index: 1; margin-top: 10px; background: #2a3245; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
         .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); display: block; }
-        .stat-txt { font-size: 11px; color: #888; display: block; }
 
+        /* العداد */
         .timer-container { position: relative; width: 220px; height: 220px; margin: 20px auto; }
         .timer-svg { transform: rotate(-90deg); width: 220px; height: 220px; }
         .timer-circle-bg { fill: none; stroke: #2a3245; stroke-width: 8; }
         .timer-circle-progress { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 628; stroke-dashoffset: 628; transition: 0.3s; }
         .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 45px; font-weight: bold; font-family: monospace; }
 
-        .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
-        .notif-warning { background: #ff4757; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; text-align: center; }
-
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #161a26; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2a3245; z-index: 1000; transition: 0.4s ease; }
+        /* شريط التنقل السفلي */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #161a26; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #2a3245; z-index: 1000; }
         .nav-item { text-align: center; color: #5d6778; font-size: 11px; flex: 1; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
         .nav-center { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; color: white; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
+
+        .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
+        .notif-warning { background: #ff4757; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; text-align: center; }
 
         .player-bar { position: fixed; bottom: 85px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; }
         .player-bar audio { height: 30px; flex: 1; }
@@ -89,8 +94,8 @@
                 <span id="pBranchText" style="font-size: 12px; color: #888;">--</span>
             </div>
             <div class="stats-grid">
-                <div class="stat-box"><span class="stat-num" id="statDone">0</span><span class="stat-txt">إجمالي الإنجاز</span></div>
-                <div class="stat-box"><span class="stat-num" id="statPoints">0</span><span class="stat-txt">نقاطي الكلية</span></div>
+                <div class="stat-box"><span class="stat-num" id="statDone">0</span><span class="stat-txt">إنجاز دائم</span></div>
+                <div class="stat-box"><span class="stat-num" id="statPoints">0</span><span class="stat-txt">نقاطي</span></div>
                 <div class="stat-box"><span class="stat-num">#1</span><span class="stat-txt">الترتيب</span></div>
                 <div class="stat-box"><span class="stat-num" id="statLevel">بطيخة</span><span class="stat-txt">المستوى</span></div>
             </div>
@@ -117,16 +122,14 @@
     <div id="tasksPage" class="page">
         <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة يا بطيخة؟">
+            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة؟">
             <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px; color:#000;"><i class="fas fa-plus"></i></button>
         </div>
         <div id="tList"></div>
     </div>
 
     <div id="quranPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="quranList"></div></div>
-    
     <div id="subjectsPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div></div>
-    
     <div id="notifPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="notifContent"></div></div>
 
     <div id="playerBar" class="player-bar">
@@ -167,7 +170,8 @@
         function openPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById(id).classList.add('active-page');
-            document.getElementById('mainNav').style.transform = 'translateY(100px)';
+            document.getElementById('mainNav').style.transform = (id === 'homePage') ? 'translateY(0)' : 'translateY(100px)';
+            
             if(id === 'profilePage') loadProfileData();
             if(id === 'tasksPage') loadT();
             if(id === 'quranPage') loadQ();
@@ -176,69 +180,33 @@
             updateBadge();
         }
 
-        function goHome() {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            document.getElementById('homePage').classList.add('active-page');
-            document.getElementById('mainNav').style.transform = 'translateY(0)';
-        }
+        function goHome() { openPage('homePage'); }
 
-        // --- نظام المواد المحدث بناءً على الصورة والبيانات الجديدة ---
-        function loadS() {
-            const user = getStudentData();
-            const year = String(user.year);
-            const branch = user.branch ? user.branch.trim() : "";
-            let subs = [];
-
-            if (year === "1") {
-                // أولى ثانوي (نظام جديد)
-                subs = ["عربي", "رياضة", "انجليزي", "علوم متكاملة", "فرنساوي", "تربية دينية", "تاريخ"];
-            } 
-            else if (year === "2") {
-                // تانية ثانوي
-                if (branch.includes("علمي")) {
-                    subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "رياضة تطبيقية", "كيمياء", "فيزياء", "تاريخ", "دين"];
-                } else {
-                    // أدبي
-                    subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "تاريخ", "فلسفة", "علم نفس", "جغرافيا", "دين"];
-                }
-            } 
-            else if (year === "3") {
-                // تالتة ثانوي (بناءً على الصورة)
-                if (branch.includes("علوم")) {
-                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الأحياء", "الكيمياء", "الفيزياء"];
-                } else if (branch.includes("رياضيات") || branch.includes("رياضه")) {
-                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الرياضيات", "الكيمياء", "الفيزياء"];
-                } else if (branch.includes("أدبي") || branch.includes("ادبي")) {
-                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "التاريخ", "الجغرافيا", "علم النفس"];
-                } else {
-                    subs = ["عربي", "انجليزي", "فيزياء", "كيمياء"]; // افتراضي
-                }
-            }
-
-            const yearName = getYearName(year);
-            document.getElementById('sGrid').innerHTML = subs.map(s => `
-                <div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} للصف ${yearName} الثانوي ${branch}','_blank')">
-                    <h4 style="font-size:14px;">${s}</h4>
-                </div>
-            `).join('');
-        }
-
-        // --- بقية وظائف النظام (العداد، المهام، القرآن) ---
+        // --- نظام العداد (مع رسائل التنبيه) ---
         let timeLeft = 1500, totalTime = 1500, timerInterval = null;
         function syncTimer() { if(!timerInterval) { timeLeft = (document.getElementById('customMin').value || 25) * 60; totalTime = timeLeft; updateUI(); } }
         function toggleT() {
-            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; document.getElementById('tBtn').innerText = "استكمال"; }
-            else {
+            if(timerInterval) { 
+                clearInterval(timerInterval); timerInterval = null; 
+                document.getElementById('tBtn').innerText = "استكمال"; 
+            } else {
                 timerInterval = setInterval(() => {
                     timeLeft--; updateUI();
                     document.getElementById('progressCircle').style.strokeDashoffset = 628 - ((totalTime - timeLeft) / totalTime) * 628;
-                    if(timeLeft <= 0) { clearInterval(timerInterval); resetT(); Swal.fire('عاش!', 'خد بريك', 'success'); }
-                }, 1000); document.getElementById('tBtn').innerText = "إيقاف";
+                    if(timeLeft <= 0) { 
+                        clearInterval(timerInterval); timerInterval = null;
+                        document.getElementById('notifSound').play();
+                        Swal.fire({ title: 'انتهى الوقت! 🎉', text: 'عاش يا بطل، خد راحة شوية ويرجع كمل', icon: 'success', confirmButtonColor: '#2ed573' });
+                        resetT();
+                    }
+                }, 1000); 
+                document.getElementById('tBtn').innerText = "إيقاف";
             }
         }
         function updateUI() { const m = Math.floor(timeLeft/60), s = timeLeft%60; document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`; }
         function resetT() { clearInterval(timerInterval); timerInterval = null; syncTimer(); document.getElementById('progressCircle').style.strokeDashoffset = 628; document.getElementById('tBtn').innerText = "بدء"; }
 
+        // --- نظام المهام (مع الرسائل والصوت) ---
         function loadT() {
             document.getElementById('tList').innerHTML = tasks.map((t, i) => `
                 <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
@@ -250,18 +218,87 @@
                 </div>
             `).join('');
         }
+
         function confirmDone(i) {
-            tasks[i].done = true; totalFinishedCount++;
-            localStorage.setItem('totalFinishedCount', totalFinishedCount);
-            saveT(); loadT(); document.getElementById('cheerSound').play();
+            Swal.fire({
+                title: 'خلصت المهمة؟ 🍉',
+                text: "سيتم إضافة 10 نقاط لرصيدك الدائم",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2ed573',
+                cancelButtonColor: '#ff4757',
+                confirmButtonText: 'نعم، تم بنجاح!',
+                cancelButtonText: 'لسه شوية'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('cheerSound').play();
+                    tasks[i].done = true;
+                    totalFinishedCount++;
+                    localStorage.setItem('totalFinishedCount', totalFinishedCount);
+                    saveT(); loadT();
+                    Swal.fire({ title: 'عاش يا وحش! 🔥', text: 'نقاطك زادت ورصيدك محفوظ للأبد', icon: 'success', timer: 2000, showConfirmButton: false });
+                }
+            });
         }
-        function deleteTask(i) { tasks.splice(i, 1); saveT(); loadT(); }
+
+        function deleteTask(i) {
+            Swal.fire({
+                title: 'حذف المهمة؟',
+                text: "لن يتم خصم أي نقاط من رصيدك الدائم",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'حذف',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    tasks.splice(i, 1);
+                    saveT(); loadT();
+                }
+            });
+        }
+
         function addTask() {
             const inp = document.getElementById('tInput'); if(!inp.value) return;
             tasks.push({text: inp.value, done: false}); saveT(); inp.value = ""; loadT();
         }
         function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
 
+        // --- نظام المواد (القرار الوزاري الجديد) ---
+        function loadS() {
+            const user = getStudentData();
+            const year = String(user.year);
+            const branch = (user.branch || "").trim();
+            let subs = [];
+
+            if (year === "1") {
+                subs = ["عربي", "رياضة", "انجليزي", "علوم متكاملة", "فرنساوي", "تربية دينية", "تاريخ"];
+            } else if (year === "2") {
+                if (branch.includes("علمي")) {
+                    subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "رياضة تطبيقية", "كيمياء", "فيزياء", "تاريخ", "دين"];
+                } else {
+                    subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "تاريخ", "فلسفة", "علم نفس", "جغرافيا", "دين"];
+                }
+            } else if (year === "3") {
+                if (branch.includes("علوم")) {
+                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الأحياء", "الكيمياء", "الفيزياء"];
+                } else if (branch.includes("رياضيات") || branch.includes("رياضه")) {
+                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الرياضيات", "الكيمياء", "الفيزياء"];
+                } else if (branch.includes("أدبي")) {
+                    subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "التاريخ", "الجغرافيا", "علم النفس"];
+                } else {
+                    subs = ["عربي", "انجليزي", "فيزياء", "كيمياء"];
+                }
+            }
+
+            const yearName = getYearName(year);
+            document.getElementById('sGrid').innerHTML = subs.map(s => `
+                <div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} للصف ${yearName} الثانوي ${branch}','_blank')">
+                    <h4 style="font-size:13px;">${s}</h4>
+                </div>
+            `).join('');
+        }
+
+        // --- القرآن والإشعارات ---
         async function loadQ() {
             const list = document.getElementById('quranList'); if(list.innerHTML !== "") return;
             const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
@@ -277,8 +314,8 @@
         function loadNotifs() {
             const undone = tasks.filter(t => !t.done);
             document.getElementById('notifContent').innerHTML = undone.length > 0 ? 
-                `<div class="notif-warning">وراك ${undone.length} مهام مخلصتهاش!</div>` + undone.map(t => `<div class="task-item">${t.text}</div>`).join('') :
-                `<p style="text-align:center; opacity:0.5;">مفيش إشعارات حالياً</p>`;
+                `<div class="notif-warning">وراك ${undone.length} مهمة مستنية تخلص! 🍉</div>` + undone.map(t => `<div class="task-item">${t.text}</div>`).join('') :
+                `<div style="text-align:center; opacity:0.3; margin-top:50px;"><i class="fas fa-bell-slash" style="font-size:40px;"></i><p>مفيش إشعارات جديدة</p></div>`;
         }
 
         function updateBadge() {
@@ -287,12 +324,26 @@
             b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none';
         }
 
+        // --- تسجيل الخروج (مع رسالة التاكيد) ---
         function logout() {
-            Swal.fire({ title: 'خروج؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم' }).then((r) => {
-                if (r.isConfirmed) { localStorage.removeItem('activeStudent'); window.location.href = 'index.html'; }
+            Swal.fire({
+                title: 'خارج ليه يا بطيخة؟ 🍉',
+                text: "متأكد إنك عايز تخرج؟ رصيدك ونقاطك هيفضلوا محفوظين",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2ed573',
+                cancelButtonColor: '#ff4757',
+                confirmButtonText: 'أيوه، سلام دلوقتي',
+                cancelButtonText: 'لا، خليني شوية'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('activeStudent');
+                    window.location.href = 'index.html'; 
+                }
             });
         }
 
+        // بدء التطبيق
         loadProfileData(); updateBadge(); syncTimer();
     </script>
 </body>
