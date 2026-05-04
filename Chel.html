@@ -28,7 +28,9 @@
 
     <div id="mainMenu" class="sub-page active-section">
         <div class="fire-title">ساحة التحدي 🔥</div>
-        <p id="userWelcome" style="text-align: center; color: var(--accent); font-weight: bold; margin-bottom: 20px;"></p>
+        <div id="userStatusBox" style="text-align: center; margin-bottom: 20px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.05);">
+            <p id="userWelcome" style="margin: 0; color: var(--accent); font-weight: bold;">جاري التحقق من الحساب...</p>
+        </div>
         
         <button class="main-btn" onclick="showSection('friendsPage'); fetchFriendsData();"><i class="fas fa-users"></i> الأصدقاء والطلبات</button>
         <button class="main-btn" onclick="showSection('selfPage')"><i class="fas fa-fist-raised"></i> تحدي نفسك</button>
@@ -63,40 +65,44 @@
     <script>
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbyLM5YTcFrQm_vUOWcc2vOUd1gpd6peAQ8EXB-CIIoenD6-nhLpYURK5_2B4GsrZ1Z9/exec";
         
-        let myPhone = "";
-        let myName = "";
+        let myPhone = localStorage.getItem('fixed_phone') || "";
+        let myName = localStorage.getItem('fixed_name') || "";
         let lastFoundPhone = "";
 
-        // --- الخطوة الأهم: جلب الحساب من الشيت فور فتح الصفحة ---
-        async function verifyUserFromSheet() {
-            // نحاول نأخذ الرقم من اللوكال ستورج كبداية خيط فقط
+        // دالة التحقق والحفظ لمرة واحدة
+        async function initAccount() {
+            // لو البيانات محفوظة أصلاً، اعرضها فوراً
+            if (myPhone && myName) {
+                document.getElementById('userWelcome').innerText = `مرحباً ${myName} 🍉`;
+            }
+
+            // محاولة جلب بيانات جديدة من اللوكال ستورج لو البيانات الأساسية ناقصة
             let storedData = JSON.parse(localStorage.getItem('activeStudent')) || {};
-            let tempPhone = storedData.phone || storedData.phoneNum || "";
-            
-            if(!tempPhone) {
-                Swal.fire('خطأ', 'يرجى تسجيل الدخول أولاً', 'error').then(() => window.location.href='index.html');
+            let tempPhone = myPhone || storedData.phone || storedData.phoneNum || "";
+
+            if (!tempPhone) {
+                document.getElementById('userWelcome').innerHTML = '<span style="color:var(--fire)">لم يتم العثور على حساب. سجل دخول مرة واحدة فقط.</span>';
                 return;
             }
 
-            // الآن نذهب للشيت للتأكد من بيانات هذا الحساب (Search User)
+            // التأكد من الشيت وحفظ البيانات نهائياً
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=searchUser&phone=${tempPhone}`);
                 const data = await res.json();
-                if(data.status === 'success') {
+                if (data.status === 'success') {
                     myPhone = data.user.phone;
                     myName = data.user.name;
-                    document.getElementById('userWelcome').innerText = `أهلاً بك: ${myName} 🍉`;
-                    console.log("Verified User:", myPhone);
-                } else {
-                    Swal.fire('تنبيه', 'لم نجد بياناتك في الشيت، سجل دخول مجدداً', 'warning').then(() => window.location.href='index.html');
+                    // حفظ نهائي في اللوكال ستورج بأسماء ثابتة لا تتغير
+                    localStorage.setItem('fixed_phone', myPhone);
+                    localStorage.setItem('fixed_name', myName);
+                    document.getElementById('userWelcome').innerText = `مرحباً ${myName} 🍉`;
                 }
-            } catch(e) {
-                console.error("Auth Error");
+            } catch (e) {
+                console.log("Offline or Error");
             }
         }
 
-        // تشغيل التحقق فوراً
-        verifyUserFromSheet();
+        initAccount();
 
         function showSection(id) {
             document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active-section'));
@@ -107,7 +113,7 @@
             document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).style.display = 'block';
-            if(event) event.target.classList.add('active');
+            if (event && event.target.classList) event.target.classList.add('active');
         }
 
         async function searchFriend() {
@@ -132,7 +138,7 @@
         }
 
         async function finalSendRequest() {
-            if(!myPhone) return Swal.fire('خطأ', 'لم يتم التعرف على حسابك من الشيت', 'error');
+            if(!myPhone) return Swal.fire('تنبيه', 'يجب تسجيل الدخول مرة واحدة أولاً', 'warning');
 
             Swal.fire({ title: 'جاري الإرسال...', didOpen: () => Swal.showLoading() });
             try {
