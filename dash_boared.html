@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة بطيختي 🍉 - نسخة الرصيد الدائم</title>
+    <title>منصة بطيختي 🍉 - النسخة النهائية المعتمدة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -32,8 +32,6 @@
         .profile-card { background: var(--card-bg); border-radius: 30px; padding: 25px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
         .profile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(45deg, var(--primary), var(--accent)); z-index: 0; }
         .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; z-index: 1; margin-top: 10px; background: #2a3245; }
-        .profile-info h2 { margin: 10px 0 5px; font-size: 22px; }
-        .profile-info p { color: var(--accent); margin: 0; font-size: 14px; opacity: 0.9; }
         
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
@@ -53,12 +51,13 @@
         .nav-item.active { color: var(--accent); }
         .nav-center { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -35px; color: white; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* المهام والإشعارات */
         .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
         .notif-warning { background: #ff4757; color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; text-align: center; }
         
         .player-bar { position: fixed; bottom: 85px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .player-bar audio { height: 30px; flex: 1; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -93,8 +92,8 @@
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img" alt="User">
             <div class="profile-info">
                 <h2 id="pName">طالب بطيخة</h2>
-                <p id="pYear">الصف الثالث الثانوي</p>
-                <span id="pBranch" style="font-size: 12px; color: #888;">علمي علوم</span>
+                <p id="pYearText">--</p>
+                <span id="pBranchText" style="font-size: 12px; color: #888;">--</span>
             </div>
             <div class="stats-grid">
                 <div class="stat-box"><span class="stat-num" id="statDone">0</span><span class="stat-txt">إجمالي الإنجاز</span></div>
@@ -135,10 +134,7 @@
     
     <div id="subjectsPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div></div>
     
-    <div id="notifPage" class="page">
-        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
-        <div id="notifContent"></div>
-    </div>
+    <div id="notifPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="notifContent"></div></div>
 
     <div id="playerBar" class="player-bar">
         <audio id="mainAudio" controls></audio>
@@ -154,23 +150,25 @@
     </div>
 
     <script>
-        // تحميل البيانات الأساسية
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        
-        // --- ميزة الرصيد التراكمي (الحل الجديد) ---
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
 
+        // تحويل أرقام الصفوف لكلمات
+        function getYearName(yearNum) {
+            const years = { "1": "الأول", "2": "الثاني", "3": "الثالث" };
+            return years[String(yearNum)] || yearNum;
+        }
+
         function getStudentData() {
-            return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3 ثانوي", branch: "عام" };
+            return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3", branch: "علمي علوم" };
         }
 
         function loadProfileData() {
             const user = getStudentData();
             document.getElementById('pName').innerText = user.name;
-            document.getElementById('pYear').innerText = user.year;
-            document.getElementById('pBranch').innerText = user.branch || "";
+            document.getElementById('pYearText').innerText = `الصف ${getYearName(user.year)} الثانوي`;
+            document.getElementById('pBranchText').innerText = user.branch || "";
             
-            // نستخدم totalFinishedCount لعرض الإحصائيات الدائمة
             document.getElementById('statDone').innerText = totalFinishedCount;
             document.getElementById('statPoints').innerText = totalFinishedCount * 10;
             
@@ -218,7 +216,7 @@
         function updateUI() { const m = Math.floor(timeLeft/60), s = timeLeft%60; document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`; }
         function resetT() { clearInterval(timerInterval); timerInterval = null; syncTimer(); document.getElementById('progressCircle').style.strokeDashoffset = 628; document.getElementById('tBtn').innerText = "بدء"; }
 
-        // --- المهام (تم التعديل لحساب النقاط للأبد) ---
+        // --- المهام ---
         function loadT() {
             document.getElementById('tList').innerHTML = tasks.map((t, i) => `
                 <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
@@ -236,31 +234,21 @@
                 if (r.isConfirmed) {
                     document.getElementById('cheerSound').play();
                     tasks[i].done = true;
-                    
-                    // زيادة الرصيد الدائم في المتصفح
                     totalFinishedCount++;
                     localStorage.setItem('totalFinishedCount', totalFinishedCount);
-                    
-                    saveT(); 
-                    loadT();
-                    Swal.fire('عاش! 🔥', 'أخدت 10 نقاط رصيد دائم', 'success');
+                    saveT(); loadT();
+                    Swal.fire('عاش! 🔥', 'تم إضافة النقاط لرصيدك الدائم', 'success');
                 }
             });
         }
-
-        function deleteTask(i) {
-            tasks.splice(i, 1);
-            saveT();
-            loadT();
-        }
-
+        function deleteTask(i) { tasks.splice(i, 1); saveT(); loadT(); }
         function addTask() {
             const inp = document.getElementById('tInput'); if(!inp.value) return;
             tasks.push({text: inp.value, done: false}); saveT(); inp.value = ""; loadT();
         }
         function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
 
-        // --- باقي الخدمات ---
+        // --- القرآن والمشغل ---
         async function loadQ() {
             const list = document.getElementById('quranList'); if(list.innerHTML !== "") return;
             const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
@@ -273,13 +261,15 @@
         }
         function stopAudio() { document.getElementById('mainAudio').pause(); document.getElementById('playerBar').style.display = 'none'; }
 
+        // --- ميزة البحث المعدلة (الكلمات بدل الأرقام) ---
         function loadS() {
             const user = getStudentData();
-            const yearInfo = user.year || "";
+            const yearName = getYearName(user.year); // يحول 3 لـ "الثالث"
             const branchInfo = user.branch || "";
-            const subs = ["عربي", "إنجليزي", "فيزياء", "كيمياء", "أحياء", "رياضيات", "تاريخ", "جغرافيا"];
+            const subs = ["عربي", "إنجليزي", "فيزياء", "كيمياء", "أحياء", "رياضيات", "فرنساوي", "جيولوجيا"];
+            
             document.getElementById('sGrid').innerHTML = subs.map(s => `
-                <div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} ${yearInfo} ${branchInfo}','_blank')">
+                <div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح مادة ${s} للصف ${yearName} الثانوي ${branchInfo}','_blank')">
                     <h4>${s}</h4>
                 </div>
             `).join('');
@@ -287,13 +277,9 @@
 
         function loadNotifs() {
             const undone = tasks.filter(t => !t.done);
-            let html = "";
-            if(undone.length > 0) {
-                html += `<div class="notif-warning">معاك مهمة مش مخلصها يا بطيخة 🍉 (${undone.length})</div>`;
-                html += undone.map(t => `<div class="task-item">${t.text}</div>`).join('');
-            } else {
-                html = `<div style="text-align:center; opacity:0.5; margin-top:50px;"><i class="fas fa-check-double" style="font-size:50px; color:var(--accent);"></i><p>كلو تمام يا بطيخة!</p></div>`;
-            }
+            let html = undone.length > 0 ? 
+                `<div class="notif-warning">معاك مهمة مش مخلصها يا بطيخة 🍉 (${undone.length})</div>` + undone.map(t => `<div class="task-item">${t.text}</div>`).join('') :
+                `<div style="text-align:center; opacity:0.5; margin-top:50px;"><i class="fas fa-check-double" style="font-size:50px; color:var(--accent);"></i><p>كلو تمام يا بطيخة!</p></div>`;
             document.getElementById('notifContent').innerHTML = html;
         }
 
@@ -310,4 +296,4 @@
     </script>
 </body>
 </html>
- 
+
