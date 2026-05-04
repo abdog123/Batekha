@@ -28,8 +28,10 @@
 
     <div id="mainMenu" class="sub-page active-section">
         <div class="fire-title">ساحة التحدي 🔥</div>
+        <p id="userWelcome" style="text-align: center; color: var(--accent); font-weight: bold; margin-bottom: 20px;"></p>
+        
         <button class="main-btn" onclick="showSection('friendsPage'); fetchFriendsData();"><i class="fas fa-users"></i> الأصدقاء والطلبات</button>
-        <button class="main-btn" onclick="showSection('selfPage')"><i class="fas fa-fist-raised"></i> تحدي نفسك (50 يوم)</button>
+        <button class="main-btn" onclick="showSection('selfPage')"><i class="fas fa-fist-raised"></i> تحدي نفسك</button>
         <button class="main-btn" onclick="window.location.href='dash_boared.html'" style="border-color:#555;"><i class="fas fa-home"></i> العودة لصفحتي</button>
     </div>
 
@@ -40,12 +42,8 @@
             <button class="tab-btn" onclick="switchTab('receivedReq')">طلبات واردة</button>
             <button class="tab-btn" onclick="switchTab('addTab')">إضافة صديق</button>
         </div>
-        <div id="myFriends" class="tab-content">
-            <div id="friendsList"></div>
-        </div>
-        <div id="receivedReq" class="tab-content" style="display:none;">
-            <div id="receivedList"></div>
-        </div>
+        <div id="myFriends" class="tab-content"><div id="friendsList"></div></div>
+        <div id="receivedReq" class="tab-content" style="display:none;"><div id="receivedList"></div></div>
         <div id="addTab" class="tab-content" style="display:none;">
             <div class="card">
                 <div style="display: flex; gap: 8px;">
@@ -62,28 +60,43 @@
         </div>
     </div>
 
-    <div id="selfPage" class="sub-page">
-        <div class="back-nav" onclick="showSection('mainMenu')"><i class="fas fa-arrow-right"></i> رجوع</div>
-        <div class="card">
-            <h3>تحدي اليوم</h3>
-            <p>ذاكر لمدة 50 دقيقة بتركيز كامل لرفع نقاطك.</p>
-            <button class="main-btn" onclick="window.location.href='dash_boared.html?open=timer&start=true'" style="border-color:var(--accent);">ابدأ الآن</button>
-        </div>
-    </div>
-
     <script>
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbyLM5YTcFrQm_vUOWcc2vOUd1gpd6peAQ8EXB-CIIoenD6-nhLpYURK5_2B4GsrZ1Z9/exec";
         
-        // --- نظام كشف المستخدم الذكي ---
-        let userData = JSON.parse(localStorage.getItem('activeStudent')) || {};
-        let myPhone = userData.phone || userData.phoneNum || "";
-        
-        // تصحيح الرقم لو الصفر ممسوح
-        if (myPhone && myPhone.toString().length === 10 && myPhone.toString().startsWith('1')) {
-            myPhone = '0' + myPhone;
+        let myPhone = "";
+        let myName = "";
+        let lastFoundPhone = "";
+
+        // --- الخطوة الأهم: جلب الحساب من الشيت فور فتح الصفحة ---
+        async function verifyUserFromSheet() {
+            // نحاول نأخذ الرقم من اللوكال ستورج كبداية خيط فقط
+            let storedData = JSON.parse(localStorage.getItem('activeStudent')) || {};
+            let tempPhone = storedData.phone || storedData.phoneNum || "";
+            
+            if(!tempPhone) {
+                Swal.fire('خطأ', 'يرجى تسجيل الدخول أولاً', 'error').then(() => window.location.href='index.html');
+                return;
+            }
+
+            // الآن نذهب للشيت للتأكد من بيانات هذا الحساب (Search User)
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=searchUser&phone=${tempPhone}`);
+                const data = await res.json();
+                if(data.status === 'success') {
+                    myPhone = data.user.phone;
+                    myName = data.user.name;
+                    document.getElementById('userWelcome').innerText = `أهلاً بك: ${myName} 🍉`;
+                    console.log("Verified User:", myPhone);
+                } else {
+                    Swal.fire('تنبيه', 'لم نجد بياناتك في الشيت، سجل دخول مجدداً', 'warning').then(() => window.location.href='index.html');
+                }
+            } catch(e) {
+                console.error("Auth Error");
+            }
         }
 
-        let lastFoundPhone = "";
+        // تشغيل التحقق فوراً
+        verifyUserFromSheet();
 
         function showSection(id) {
             document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active-section'));
@@ -94,7 +107,7 @@
             document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).style.display = 'block';
-            event.target.classList.add('active');
+            if(event) event.target.classList.add('active');
         }
 
         async function searchFriend() {
@@ -115,22 +128,19 @@
                 } else {
                     Swal.fire('غير موجود', 'هذا الرقم غير مسجل', 'error');
                 }
-            } catch(e) { Swal.fire('خطأ', 'فشل الاتصال بالشيت', 'error'); }
+            } catch(e) { Swal.fire('خطأ', 'فشل الاتصال', 'error'); }
         }
 
         async function finalSendRequest() {
-            // التحقق النهائي من رقم المرسل لمنع الـ undefined
-            if(!myPhone) {
-                return Swal.fire('تنبيه', 'لم نتمكن من معرفة حسابك، يرجى تسجيل الخروج والدخول مرة أخرى', 'warning');
-            }
+            if(!myPhone) return Swal.fire('خطأ', 'لم يتم التعرف على حسابك من الشيت', 'error');
 
             Swal.fire({ title: 'جاري الإرسال...', didOpen: () => Swal.showLoading() });
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=addFriend&sender=${myPhone}&receiver=${lastFoundPhone}`);
                 const data = await res.json();
-                Swal.fire(data.status === 'success' ? 'تم!' : 'فشل', data.message, data.status);
+                Swal.fire(data.status === 'success' ? 'تم الإرسال!' : 'فشل', data.message, data.status);
                 if(data.status === 'success') document.getElementById('searchResult').style.display = 'none';
-            } catch(e) { Swal.fire('خطأ', 'فشل إرسال الطلب', 'error'); }
+            } catch(e) { Swal.fire('خطأ', 'فشل الإرسال', 'error'); }
         }
 
         async function fetchFriendsData() {
@@ -139,14 +149,13 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${myPhone}`);
                 const data = await res.json();
                 renderLists(data);
-            } catch(e) { console.log("Fetch Error"); }
+            } catch(e) { console.error("Fetch Friends Error"); }
         }
 
         function renderLists(data) {
             document.getElementById('friendsList').innerHTML = data.friends.length ? data.friends.map(f => `
                 <div class="card"><div style="display:flex; justify-content:space-between; align-items:center;">
                 <span><i class="fas fa-circle" style="color:var(--accent); font-size:10px;"></i> ${f.name}</span>
-                <button onclick="Swal.fire('تحدي','سيتم تفعيلها قريباً','info')" style="background:var(--fire); border:none; padding:5px 10px; border-radius:8px; font-size:12px; color:white;">تحدي</button>
                 </div></div>`).join('') : '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>';
 
             document.getElementById('receivedList').innerHTML = data.received.length ? data.received.map(r => `
@@ -166,4 +175,3 @@
     </script>
 </body>
 </html>
-
