@@ -49,7 +49,7 @@ document.getElementById('signupForm').addEventListener('submit', function(e) {
     }).finally(() => { regBtn.innerText = 'إنشاء حساب'; regBtn.disabled = false; });
 });
 
-// تسجيل الدخول (الكود المعدل والنهائي)
+// تسجيل الدخول (التعديل القاتل للمشكلة)
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const loginBtn = document.getElementById('loginBtn');
@@ -64,29 +64,25 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     .then(res => res.json())
     .then(response => {
         if (response.result === "found") {
-            
-            // 1. تجميع البيانات وحفظ رقم الهاتف (السر في السطر ده)
+            // حفظ كل البيانات الممكنة عشان صفحة التحدي ماتتوهش
             const studentData = {
                 name: response.name,
-                phone: response.phone, // السطر ده هو اللي هيحل مشكلة الـ undefined
+                phone: response.phone, // السطر ده هو الحياة
+                phoneNum: response.phone, // زيادة تأكيد
                 year: response.year,
                 spec: response.spec
             };
             
-            // 2. الحفظ في ذاكرة المتصفح (localStorage)
             localStorage.setItem('activeStudent', JSON.stringify(studentData));
-            
-            // 3. حفظ الرقم بشكل منفصل لزيادة الأمان والربط بساحة التحدي
-            localStorage.setItem('userPhone', response.phone);
+            localStorage.setItem('userPhone', response.phone); // نسخة احتياطية ثالثة
 
             Swal.fire({
                 icon: 'success',
-                title: 'مرحباً بك!',
-                text: `أهلاً بك يا ${response.name}`,
+                title: 'تم تسجيل الدخول!',
+                text: `أهلاً يا ${response.name}`,
                 timer: 1500,
                 showConfirmButton: false
             }).then(() => {
-                // الانتقال للوحة التحكم
                 window.location.href = 'dash_boared.html'; 
             });
 
@@ -95,9 +91,6 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         } else {
             Swal.fire('غير موجود', 'الرقم غير مسجل', 'warning');
         }
-    })
-    .catch(err => {
-        Swal.fire('خطأ في الاتصال', 'تأكد من الإنترنت وحاول مجدداً', 'error');
     })
     .finally(() => { 
         loginBtn.innerText = 'دخول'; 
