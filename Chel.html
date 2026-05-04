@@ -55,90 +55,25 @@
     </div>
 
     <script>
-        // رابط السكريبت الخاص بك
-        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbyLM5YTcFrQm_vUOWcc2vOUd1gpd6peAQ8EXB-CIIoenD6-nhLpYURK5_2B4GsrZ1Z9/exec";
-        
-        // جلب البيانات التي تم حفظها عند تسجيل الدخول
-        const userData = JSON.parse(localStorage.getItem('activeStudent')) || {};
-        const myPhone = userData.phone || "";
-        const myName = userData.name || "";
-        let lastFoundPhone = "";
-
-        // التحقق من أن المستخدم مسجل دخول
-        if (!myPhone) {
-            Swal.fire('تنبيه', 'يرجى تسجيل الدخول أولاً', 'warning').then(() => window.location.href = 'index.html');
-        } else {
-            document.getElementById('welcomeMsg').innerText = `أهلاً بك يا ${myName} 🍉`;
+    const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbyLM5YTcFrQm_vUOWcc2vOUd1gpd6peAQ8EXB-CIIoenD6-nhLpYURK5_2B4GsrZ1Z9/exec";
+    
+    // الطريقة الذكية لجلب الرقم
+    let data = JSON.parse(localStorage.getItem('activeStudent')) || {};
+    let myPhone = data.phone || data.phoneNum || localStorage.getItem('userPhone') || "";
+    
+    // لو الرقم موجود، اعرض الاسم، لو مش موجود، ماتطلعش تنبيه مزعج
+    window.onload = () => {
+        if (myPhone && document.getElementById('welcomeMsg')) {
+            document.getElementById('welcomeMsg').innerText = `أهلاً بك يا ${data.name || 'بطل'} 🍉`;
         }
+    };
+    
+    // عند إرسال الطلب، تأكد إن الرقم موجود
+    async function sendFriendRequest() {
+        if(!myPhone) return Swal.fire('تنبيه', 'سجل دخولك مرة أخرى لربط الحساب', 'warning');
+        // ... كود الإرسال ...
+    }
+</script>
 
-        function showSection(id) {
-            document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active-section'));
-            document.getElementById(id).classList.add('active-section');
-        }
-
-        async function searchFriend() {
-            let phone = document.getElementById('friendPhone').value.trim();
-            // معالجة الصفر
-            if (phone.startsWith('1') && phone.length === 10) phone = '0' + phone;
-            if(!phone) return;
-
-            Swal.fire({ title: 'جاري البحث...', didOpen: () => Swal.showLoading() });
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=searchUser&phone=${phone}`);
-                const data = await res.json();
-                Swal.close();
-
-                if(data.status === 'success') {
-                    document.getElementById('searchResult').style.display = 'block';
-                    document.getElementById('foundName').innerText = "تم العثور على: " + data.user.name;
-                    lastFoundPhone = data.user.phone;
-                } else {
-                    Swal.fire('غير موجود', 'هذا الرقم غير مسجل في المنصة', 'error');
-                }
-            } catch(e) { Swal.fire('خطأ', 'فشل الاتصال بالسيرفر', 'error'); }
-        }
-
-        async function sendFriendRequest() {
-            if(!myPhone) return Swal.fire('خطأ', 'بياناتك ناقصة، سجل دخول مجدداً', 'error');
-            
-            Swal.fire({ title: 'جاري الإرسال...', didOpen: () => Swal.showLoading() });
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=addFriend&sender=${myPhone}&receiver=${lastFoundPhone}`);
-                const data = await res.json();
-                Swal.fire(data.status === 'success' ? 'تم الإرسال!' : 'فشل', data.message, data.status);
-                document.getElementById('searchResult').style.display = 'none';
-            } catch(e) { Swal.fire('خطأ', 'حدث خطأ غير متوقع', 'error'); }
-        }
-
-        async function fetchFriendsData() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${myPhone}`);
-                const data = await res.json();
-                
-                document.getElementById('friendsList').innerHTML = data.friends.length ? data.friends.map(f => `
-                    <div class="card"><i class="fas fa-user-check" style="color:var(--accent)"></i> ${f.name}</div>
-                `).join('') : '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء حالياً</p>';
-
-                document.getElementById('receivedList').innerHTML = data.received.length ? data.received.map(r => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>${r.name}</span>
-                        <div>
-                            <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); border:none; padding:8px 15px; border-radius:8px; font-weight:bold; color:black; cursor:pointer;">قبول</button>
-                            <button onclick="respond('${r.phone}', 'reject')" style="background:rgba(255,0,0,0.2); border:1px solid red; padding:8px 15px; border-radius:8px; color:red; cursor:pointer; margin-right:5px;">رفض</button>
-                        </div>
-                    </div>
-                `).join('') : '<p style="text-align:center; opacity:0.5;">لا توجد طلبات جديدة</p>';
-            } catch(e) { console.log("Error fetching friends"); }
-        }
-
-        async function respond(target, action) {
-            Swal.fire({ title: 'جاري المعالجة...', didOpen: () => Swal.showLoading() });
-            try {
-                await fetch(`${SCRIPT_URL}?action=respondRequest&user=${myPhone}&target=${target}&status=${action}`);
-                Swal.fire('تم التحديث', '', 'success');
-                fetchFriendsData();
-            } catch(e) { Swal.fire('خطأ', 'فشل تحديث الطلب', 'error'); }
-        }
-    </script>
 </body>
 </html>
