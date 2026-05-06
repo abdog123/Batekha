@@ -19,15 +19,9 @@
             overscroll-behavior-y: contain; overflow-x: hidden;
         }
 
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); position: relative; }
-        .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer; position: relative;}
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer;}
         
-        /* النقطة الحمراء للإشعارات */
-        .notif-dot { 
-            position: absolute; top: 10px; left: 10px; width: 12px; height: 12px; 
-            background: #ff4757; border-radius: 50%; border: 2px solid #fff; display: none; z-index: 5;
-        }
-
         .sub-page { display: none; max-width: 500px; margin: auto; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -69,10 +63,9 @@
             <div id="welcomeUser" style="margin-top:10px; color:var(--accent); font-size:18px;"></div>
         </div>
         <button class="main-btn" onclick="showSection('friendsPage')">
-            <div id="mainMenuDot" class="notif-dot"></div>
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
+        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -87,7 +80,7 @@
             <h4><i class="fas fa-search"></i> ابحث عن صديق برقم الهاتف</h4>
             <div style="display:flex; gap:8px;">
                 <input type="tel" id="friendPhone" placeholder="01xxxxxxxxx" style="margin:0;">
-                <button onclick="searchFriend()" id="searchBtn" style="background:var(--primary); padding:0 15px; border-radius:12px; border:none; color:white;"><i class="fas fa-search"></i></button>
+                <button onclick="searchFriend()" style="background:var(--primary); padding:0 15px; border-radius:12px; border:none; color:white;"><i class="fas fa-search"></i></button>
             </div>
             <div id="searchResult" style="display:none; margin-top:15px; text-align:center;">
                 <p id="foundName" style="color:var(--accent); font-weight:bold;"></p>
@@ -115,13 +108,12 @@
     </div>
 
     <script>
+        // رابط السكريبت الخاص بك
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
         
         let chatInterval = null;
-        let globalSyncInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
-        let msgMemory = JSON.parse(localStorage.getItem('msgMemory')) || {};
 
         function initApp() {
             const user = JSON.parse(localStorage.getItem('appUser'));
@@ -129,36 +121,9 @@
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
-                startGlobalSync();
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
-        }
-
-        // تحديث ذكي للإشعارات والنقطة الحمراء
-        function startGlobalSync() {
-            if(globalSyncInterval) clearInterval(globalSyncInterval);
-            globalSyncInterval = setInterval(async () => {
-                const user = JSON.parse(localStorage.getItem('appUser'));
-                if(!user || isChatOpen) return;
-                
-                try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
-                    const data = await res.json();
-                    let hasNew = false;
-                    
-                    data.friends.forEach(f => {
-                        // إذا كان عدد الرسائل أكبر مما هو مسجل في الذاكرة
-                        if(f.msgCount > (msgMemory[f.phone] || 0)) {
-                            hasNew = true;
-                            const dot = document.getElementById(`dot-${f.phone}`);
-                            if(dot) dot.style.display = 'block';
-                        }
-                    });
-                    
-                    document.getElementById('mainMenuDot').style.display = hasNew ? 'block' : 'none';
-                } catch(e) {}
-            }, 2000); // تحديث كل ثانيتين للقائمة الرئيسية
         }
 
         function saveAndLock() {
@@ -184,7 +149,6 @@
                 
                 document.getElementById('friendsList').innerHTML = data.friends.map(f => `
                     <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; cursor:pointer;">
-                        <div id="dot-${f.phone}" class="notif-dot" style="${f.msgCount > (msgMemory[f.phone] || 0) ? 'display:block' : ''}"></div>
                         <b>${f.name}</b>
                         <i class="fas fa-chevron-left" style="opacity:0.3;"></i>
                     </div>
@@ -207,12 +171,8 @@
             document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري تحميل المحادثة...</div>';
             lastMsgCount = 0;
             
-            // إخفاء النقطة الحمراء فوراً عند فتح الشات
-            const dot = document.getElementById(`dot-${phone}`);
-            if(dot) dot.style.display = 'none';
-
             loadMessages();
-            chatInterval = setInterval(loadMessages, 1000); // تحديث سريع جداً كل ثانية داخل الشات
+            chatInterval = setInterval(loadMessages, 3000);
         }
 
         async function loadMessages() {
@@ -222,10 +182,6 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
                 
-                // تحديث ذاكرة عدد الرسائل لهذا الصديق
-                msgMemory[window.currentChatPhone] = data.messages.length;
-                localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
-
                 if (data.messages && data.messages.length > lastMsgCount) {
                     const container = document.getElementById('chatMsgs');
                     container.innerHTML = data.messages.map(m => {
@@ -256,6 +212,7 @@
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
             
+            // إضافة فورية مع علامة الساعة (وهمي مؤقتاً)
             const container = document.getElementById('chatMsgs');
             const tempDiv = document.createElement('div');
             tempDiv.className = 'msg sent';
@@ -265,8 +222,9 @@
             inp.value = '';
 
             try {
-                await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                // الذاكرة ستتحدث تلقائياً في التحديث القادم (بعد ثانية)
+                const res = await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
+                const result = await res.json();
+                // التحديث القادم من السيرفر سيحول الساعة لصح
             } catch(e) {
                 tempDiv.style.background = "#8b0000";
             }
@@ -277,26 +235,22 @@
             document.getElementById('chatPage').style.display = 'none';
             clearInterval(chatInterval);
             window.currentChatPhone = null;
-            fetchFriendsData(); // لتحديث النقط في القائمة
         }
 
         async function searchFriend() {
             const p = document.getElementById('friendPhone').value;
             if(!p) return;
-            const btn = document.getElementById('searchBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
-                const data = await res.json();
-                if(data.found) {
-                    document.getElementById('searchResult').style.display = 'block';
-                    document.getElementById('foundName').innerText = data.name;
-                    window.searchedPhone = p;
-                } else {
-                    Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
-                }
-            } catch(e) {}
-            btn.innerHTML = '<i class="fas fa-search"></i>';
+            Swal.showLoading();
+            const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
+            const data = await res.json();
+            Swal.close();
+            if(data.found) {
+                document.getElementById('searchResult').style.display = 'block';
+                document.getElementById('foundName').innerText = data.name;
+                window.searchedPhone = p;
+            } else {
+                Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
+            }
         }
 
         async function sendFriendRequest() {
@@ -316,4 +270,3 @@
     </script>
 </body>
 </html>
-
