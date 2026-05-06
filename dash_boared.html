@@ -332,6 +332,53 @@
         }
 
         setDailyAdvice(); updateBadge(); updateCircle();
+        // محرك الإشعارات الذكي
+let lastMessagesCount = localStorage.getItem('totalMsgs') || 0;
+
+async function syncGlobalNotifications() {
+    const user = JSON.parse(localStorage.getItem('appUser'));
+    if (!user || !user.phone) return;
+
+    try {
+        // نطلب من السيرفر جلب كل الرسائل الخاصة بالمستخدم
+        const res = await fetch(`${CHAT_SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+        const data = await res.json();
+        
+        // حساب إجمالي الرسائل وطلبات الصداقة
+        let currentRequests = data.received ? data.received.length : 0;
+        
+        // جلب الرسائل غير المقروءة (منطق تقريبي)
+        // إذا زاد عدد الرسائل عما هو مسجل في المتصفح، يعني هناك جديد
+        if (currentRequests > 0) {
+            showLiveNotification("طلب صداقة جديد", "لديك طلبات معلقة في ساحة الأصدقاء 🤝");
+        }
+        
+        // تحديث الرقم الأحمر (Badge)
+        updateBadgeUI(currentRequests);
+        
+    } catch (e) { console.error("Sync Error"); }
+}
+
+function showLiveNotification(title, body) {
+    // إشعار نظام (خارجي)
+    if (Notification.permission === "granted") {
+        new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/733/733585.png' });
+    }
+    // صوت تنبيه
+    document.getElementById('notifSound').play();
+}
+
+function updateBadgeUI(count) {
+    const badge = document.getElementById('notifBadge');
+    if(badge) {
+        badge.innerText = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+    }
+}
+
+// فحص كل 5 ثواني بشكل دائم في الخلفية
+setInterval(syncGlobalNotifications, 2000);
+
     </script>
 </body>
 </html>
