@@ -72,7 +72,7 @@
         <button class="main-btn" onclick="goToFriends()">
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
+        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -126,24 +126,22 @@
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
-                startGlobalNotifications(); // تشغيل فحص الرسائل العام
+                startGlobalNotifications(); 
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
         }
 
-        // فحص الرسائل في الخلفية (حتى لو الشات مقفول)
         function startGlobalNotifications() {
             if (globalNotifyInterval) clearInterval(globalNotifyInterval);
             globalNotifyInterval = setInterval(async () => {
-                if (isChatOpen) return; // لا تظهر نوتفكيشن لو الشات مفتوح بالفعل
+                if (isChatOpen) return;
                 const user = JSON.parse(localStorage.getItem('appUser'));
                 try {
                     const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                     const data = await res.json();
-                    // هنا يمكن إضافة منطق لمقارنة عدد الرسائل الكلي وتنبيه المستخدم
                 } catch(e) {}
-            }, 10000); // فحص كل 10 ثواني
+            }, 5000); // تسريع فحص الخلفية إلى 5 ثوانٍ
         }
 
         function saveAndLock() {
@@ -196,12 +194,13 @@
             document.getElementById('chatMsgs').innerHTML = '';
             lastMsgCount = 0;
             loadMessages();
-            chatInterval = setInterval(loadMessages, 2000);
+            if (chatInterval) clearInterval(chatInterval);
+            chatInterval = setInterval(loadMessages, 1000); // تسريع التحديث إلى ثانية واحدة
         }
 
         async function loadMessages() {
+            if(!isChatOpen || !window.currentChatPhone) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
-            if(!window.currentChatPhone) return;
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
@@ -237,27 +236,29 @@
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
             
-            // إضافة فورية مع علامة الساعة
             const container = document.getElementById('chatMsgs');
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const tempId = 'temp_' + Date.now();
-            container.innerHTML += `
+
+            // إضافة فورية للشاشة (Optimistic UI)
+            const optimisticMsg = `
                 <div class="msg sent" id="${tempId}">
                     ${text}
                     <div class="msg-info"><span>${time}</span> <i class="fas fa-clock status-tick"></i></div>
                 </div>
             `;
+            container.insertAdjacentHTML('beforeend', optimisticMsg);
             container.scrollTop = container.scrollHeight;
             inp.value = '';
+            inp.focus();
 
             try {
-                await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                // تحديث علامة الساعة لصح عند النجاح
+                const response = await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
                 const tempMsg = document.getElementById(tempId);
                 if(tempMsg) tempMsg.querySelector('.status-tick').className = 'fas fa-check status-tick';
             } catch(e) {
                 const tempMsg = document.getElementById(tempId);
-                if(tempMsg) tempMsg.style.background = '#8b0000';
+                if(tempMsg) tempMsg.style.opacity = '0.5';
             }
         }
 
@@ -274,7 +275,7 @@
         function closeChat() {
             isChatOpen = false;
             document.getElementById('chatPage').style.display = 'none';
-            clearInterval(chatInterval);
+            if (chatInterval) clearInterval(chatInterval);
             window.currentChatPhone = null;
         }
 
@@ -283,3 +284,4 @@
     </script>
 </body>
 </html>
+
