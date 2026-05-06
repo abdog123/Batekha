@@ -24,7 +24,6 @@
         .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer; position: relative; margin-bottom: 10px;}
         .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* النقطة الحمراء */
         .notif-dot { 
             position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; 
             background: var(--danger); border-radius: 50%; border: 2px solid #fff; 
@@ -124,10 +123,10 @@
         </div>
 
         <h4 style="color:var(--primary);">طلبات الصداقة المستلمة</h4>
-        <div id="receivedList"><div class="searching-text">جاري البحث عن طلبات...</div></div>
+        <div id="receivedList"></div>
 
         <h4 style="color:var(--accent);">أصدقائي</h4>
-        <div id="friendsList"><div class="searching-text">جاري البحث عن أصدقاء...</div></div>
+        <div id="friendsList"></div>
     </div>
 
     <div id="chatPage">
@@ -149,7 +148,11 @@
         let globalSyncInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
+        
+        // جلب الذاكرة المحفوظة
         let msgMemory = JSON.parse(localStorage.getItem('msgMemory')) || {};
+        let friendsCache = JSON.parse(localStorage.getItem('friendsCache')) || { friends: [], received: [] };
+        let chatCache = JSON.parse(localStorage.getItem('chatCache')) || {};
 
         function initApp() {
             const user = JSON.parse(localStorage.getItem('appUser'));
@@ -163,7 +166,6 @@
             }
         }
 
-        // تحسين النقطة الحمراء (استخدام localStorage للمزامنة الفورية)
         function startGlobalSync() {
             if(globalSyncInterval) clearInterval(globalSyncInterval);
             globalSyncInterval = setInterval(async () => {
@@ -172,31 +174,24 @@
                 try {
                     const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                     const data = await res.json();
-                    let hasNewMsg = false;
                     
+                    let hasNewMsg = false;
                     data.friends.forEach(f => {
                         const count = f.msgCount || 0;
                         const savedCount = msgMemory[f.phone] || 0;
-                        const dot = document.getElementById(`dot-${f.phone}`);
+                        if(count > savedCount) hasNewMsg = true;
                         
-                        if(count > savedCount) {
-                            hasNewMsg = true;
-                            if(dot) {
-                                dot.style.display = 'block';
-                                dot.title = "رسالة جديدة";
-                            }
-                        } else {
-                            if(dot) dot.style.display = 'none';
-                        }
+                        // تحديث النقطة الحمراء بجانب الصديق إذا كان في صفحة الأصدقاء
+                        const dot = document.getElementById(`dot-${f.phone}`);
+                        if(dot) dot.style.display = (count > savedCount) ? 'block' : 'none';
                     });
                     
-                    const hasRequests = data.received && data.received.length > 0;
+                    const hasReq = data.received && data.received.length > 0;
                     const mainMenuDot = document.getElementById('mainMenuDot');
-                    if(mainMenuDot) {
-                        mainMenuDot.style.display = (hasNewMsg || hasRequests) ? 'block' : 'none';
-                    }
+                    if(mainMenuDot) mainMenuDot.style.display = (hasNewMsg || hasReq) ? 'block' : 'none';
+                    
                 } catch(e) {}
-            }, 500); 
+            }, 2000); 
         }
 
         function saveAndLock() {
@@ -211,16 +206,45 @@
             document.querySelectorAll('.sub-page').forEach(p => p.style.display = 'none');
             document.getElementById(id).style.display = 'block';
             localStorage.setItem('lastPage', id);
-            if(id === 'friendsPage') fetchFriendsData();
+            if(id === 'friendsPage') {
+                renderFriends(friendsCache); // عرض الكاش أولاً
+                fetchFriendsData(); // تحديث في الخلفية
+            }
+        }
+
+        function renderFriends(data) {
+            const friendsList = document.getElementById('friendsList');
+            const receivedList = document.getElementById('receivedList');
+
+            friendsList.innerHTML = data.friends.map(f => {
+                const hasNew = (f.msgCount || 0) > (msgMemory[f.phone] || 0);
+                return `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
+                    <b style="flex:1;">${f.name}</b>
+                    <div class="chat-icon-btn" onclick="openChat('${f.name}', '${f.phone}')">
+                        <div id="dot-${f.phone}" class="notif-dot" style="${hasNew ? 'display:block' : 'none'}"></div>
+                        <i class="fas fa-comment-dots" style="font-size:20px;"></i>
+                    </div>
+                </div>`;
+            }).join('') || (data.friends.length === 0 ? '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>' : '');
+
+            receivedList.innerHTML = data.received.map(r => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <span style="flex:1;"><b>${r.name}</b></span>
+                    <button id="acceptBtn-${r.phone}" onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">قبول</button>
+                    <button onclick="respond('${r.phone}', 'reject')" style="background:var(--danger); color:white; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">رفض</button>
+                </div>`).join('') || (data.received.length === 0 ? '<p style="text-align:center; opacity:0.3;">لا توجد طلبات</p>' : '');
         }
 
         async function fetchFriendsData() {
             const user = JSON.parse(localStorage.getItem('appUser'));
             const syncIcon = document.getElementById('syncIcon');
             
-            // تعديل 1: إظهار "جاري البحث" عند التحديث
-            document.getElementById('receivedList').innerHTML = '<div class="searching-text">جاري البحث عن طلبات...</div>';
-            document.getElementById('friendsList').innerHTML = '<div class="searching-text">جاري البحث عن أصدقاء...</div>';
+            // إذا لم يكن هناك كاش، أظهر رسالة البحث
+            if (friendsCache.friends.length === 0 && friendsCache.received.length === 0) {
+                document.getElementById('receivedList').innerHTML = '<div class="searching-text">جاري البحث...</div>';
+                document.getElementById('friendsList').innerHTML = '<div class="searching-text">جاري البحث...</div>';
+            }
             
             if(syncIcon) syncIcon.classList.add('fa-spin');
             
@@ -228,28 +252,29 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                 const data = await res.json();
                 
-                document.getElementById('friendsList').innerHTML = data.friends.map(f => {
-                    const hasNew = (f.msgCount || 0) > (msgMemory[f.phone] || 0);
-                    return `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
-                        <b style="flex:1;">${f.name}</b>
-                        <div class="chat-icon-btn" onclick="openChat('${f.name}', '${f.phone}')">
-                            <div id="dot-${f.phone}" class="notif-dot" style="${hasNew ? 'display:block' : 'none'}"></div>
-                            <i class="fas fa-comment-dots" style="font-size:20px;"></i>
-                        </div>
-                    </div>
-                `}).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء حالياً</p>';
-
-                document.getElementById('receivedList').innerHTML = data.received.map(r => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                        <span style="flex:1;"><b>${r.name}</b></span>
-                        <button id="acceptBtn-${r.phone}" onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">قبول</button>
-                        <button onclick="respond('${r.phone}', 'reject')" style="background:var(--danger); color:white; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">رفض</button>
-                    </div>
-                `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات معلقة</p>';
+                friendsCache = data;
+                localStorage.setItem('friendsCache', JSON.stringify(data));
+                renderFriends(data);
                 
                 if(syncIcon) syncIcon.classList.remove('fa-spin');
             } catch(e) { if(syncIcon) syncIcon.classList.remove('fa-spin'); }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMsgs');
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            container.innerHTML = messages.map(m => {
+                const isMe = String(m.sender) === String(user.phone);
+                return `
+                    <div class="msg ${isMe ? 'sent' : 'received'}">
+                        ${m.text}
+                        <div class="msg-info">
+                            <span>${m.time || ''}</span>
+                            ${isMe ? '<i class="fas fa-check status-tick"></i>' : ''}
+                        </div>
+                    </div>`;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
         }
 
         async function openChat(name, phone) {
@@ -257,14 +282,21 @@
             window.currentChatPhone = phone;
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('chatFriendName').innerText = name;
-            document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري تحميل المحادثة...</div>';
-            lastMsgCount = 0;
+            
+            // عرض الشات من الكاش أولاً
+            if (chatCache[phone]) {
+                renderMessages(chatCache[phone]);
+                lastMsgCount = chatCache[phone].length;
+            } else {
+                document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري التحميل...</div>';
+                lastMsgCount = 0;
+            }
             
             const dot = document.getElementById(`dot-${phone}`);
             if(dot) dot.style.display = 'none';
 
             loadMessages();
-            chatInterval = setInterval(loadMessages, 1000);
+            chatInterval = setInterval(loadMessages, 2000);
         }
 
         async function loadMessages() {
@@ -274,27 +306,17 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
                 
+                // تحديث الذاكرة والكاش
                 msgMemory[window.currentChatPhone] = data.messages.length;
+                chatCache[window.currentChatPhone] = data.messages;
                 localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
+                localStorage.setItem('chatCache', JSON.stringify(chatCache));
 
-                if (data.messages && data.messages.length > lastMsgCount) {
-                    const container = document.getElementById('chatMsgs');
-                    container.innerHTML = data.messages.map(m => {
-                        const isMe = String(m.sender) === String(user.phone);
-                        return `
-                            <div class="msg ${isMe ? 'sent' : 'received'}">
-                                ${m.text}
-                                <div class="msg-info">
-                                    <span>${m.time || ''}</span>
-                                    ${isMe ? '<i class="fas fa-check status-tick"></i>' : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                    container.scrollTop = container.scrollHeight;
+                if (data.messages.length !== lastMsgCount) {
+                    renderMessages(data.messages);
                     lastMsgCount = data.messages.length;
                     
-                    if (data.messages[data.messages.length-1].sender !== user.phone) {
+                    if (data.messages.length > 0 && data.messages[data.messages.length-1].sender !== user.phone) {
                         try { new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play(); } catch(e) {}
                     }
                 }
@@ -307,6 +329,7 @@
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
             
+            // إضافة الرسالة بصرياً فوراً (Optimistic UI)
             const container = document.getElementById('chatMsgs');
             const tempDiv = document.createElement('div');
             tempDiv.className = 'msg sent';
@@ -317,9 +340,7 @@
 
             try {
                 await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-            } catch(e) {
-                tempDiv.style.background = "#8b0000";
-            }
+            } catch(e) { tempDiv.style.opacity = "0.5"; }
         }
 
         function closeChat() {
@@ -333,12 +354,7 @@
         async function searchFriend() {
             const p = document.getElementById('friendPhone').value.trim();
             const user = JSON.parse(localStorage.getItem('appUser'));
-            
-            // تعديل 2: منع البحث عن النفس
-            if(!p) return;
-            if(p === user.phone) {
-                return Swal.fire('مرحباً!', 'لا يمكنك البحث عن نفسك أو إضافة نفسك كصديق 😂', 'info');
-            }
+            if(!p || p === user.phone) return Swal.fire('مرحباً!', 'لا يمكنك إضافة نفسك 😂', 'info');
 
             Swal.showLoading();
             try {
@@ -350,7 +366,7 @@
                     document.getElementById('foundName').innerText = data.name;
                     window.searchedPhone = p;
                 } else {
-                    Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
+                    Swal.fire('غير موجود', 'الرقم غير مسجل', 'info');
                 }
             } catch(e) { Swal.close(); }
         }
@@ -361,42 +377,21 @@
             btn.disabled = true;
             btn.innerText = "جاري الإرسال...";
             try {
-                // تعديل 2: السيرفر سيعالج الصداقة التلقائية إذا كان هناك طلب متبادل
                 const res = await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
                 const result = await res.json();
-                
-                if(result.status === "auto_friend") {
-                    Swal.fire('صداقة تلقائية!', 'لقد أصبحتما أصدقاء بالفعل لأن الطرف الآخر أرسل لك طلباً أيضاً!', 'success');
-                } else {
-                    Swal.fire('تم', 'تم إرسال طلب الصداقة بنجاح', 'success');
-                }
+                Swal.fire('تم', 'تم إرسال الطلب', 'success');
                 document.getElementById('searchResult').style.display = 'none';
                 fetchFriendsData();
-            } catch(e) {
-                Swal.fire('خطأ', 'فشل الإرسال', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "إرسال طلب صداقة ➕";
-            }
+            } catch(e) { Swal.fire('خطأ', 'فشل الإرسال', 'error'); } 
+            finally { btn.disabled = false; btn.innerText = "إرسال طلب صداقة ➕"; }
         }
 
         async function respond(phone, act) {
             const user = JSON.parse(localStorage.getItem('appUser'));
-            const btn = document.getElementById(`acceptBtn-${phone}`);
-            
-            if(act === 'accept' && btn) {
-                btn.disabled = true;
-                btn.innerText = "جاري القبول...";
-            }
-            
             try {
                 await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
-                if(act === 'accept') Swal.fire('مبروك', 'تم قبول الصداقة', 'success');
-                else Swal.fire('تم', 'تم رفض الطلب', 'info');
                 fetchFriendsData();
-            } catch(e) {
-                if(btn) { btn.disabled = false; btn.innerText = "قبول"; }
-            }
+            } catch(e) {}
         }
 
         initApp();
