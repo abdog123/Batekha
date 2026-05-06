@@ -159,17 +159,15 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
+        // الرابط الجديد الذي قمت بإنشائه
+        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycby3cnnVRVDXwloY-Fo8p7g1gYt3WNhA8pbwXAZOYmrTvnoCmm8jTywyZOB9riO1eOwy/exec";
+        
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
         let knownMsgs = {}; 
 
         // --- نظام الرسالة المنبثقة المحدث ---
         async function checkBroadcast() {
-            // التحقق من أن المستخدم مسجل دخول حالياً
-            const user = localStorage.getItem('activeStudent');
-            if (!user) return; 
-
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getBroadcast`);
                 const data = await res.json();
@@ -185,11 +183,11 @@
                         color: '#fff'
                     });
                 }
-            } catch(e) { console.log("No broadcast found"); }
+            } catch(e) { console.log("خطأ في جلب الإعلان"); }
         }
 
         async function checkGlobalNotifications() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
+            const user = JSON.parse(localStorage.getItem('activeStudent')); // تعديل لجلب بيانات المستخدم النشط
             if (!user || !user.phone) return;
 
             try {
@@ -197,19 +195,21 @@
                 const data = await res.json();
                 let hasUnread = false;
 
-                for (const friend of data.friends) {
-                    const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${friend.phone}`);
-                    const mData = await mRes.json();
-                    const count = mData.messages.length;
-                    if (knownMsgs[friend.phone] !== undefined && count > knownMsgs[friend.phone]) {
-                        const last = mData.messages[count - 1];
-                        if (String(last.sender) !== String(user.phone)) {
-                            hasUnread = true;
-                            showToast(`رسالة من ${friend.name}`, last.text);
-                            document.getElementById('notifSound').play();
+                if(data.friends) {
+                    for (const friend of data.friends) {
+                        const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${friend.phone}`);
+                        const mData = await mRes.json();
+                        const count = mData.messages.length;
+                        if (knownMsgs[friend.phone] !== undefined && count > knownMsgs[friend.phone]) {
+                            const last = mData.messages[count - 1];
+                            if (String(last.sender) !== String(user.phone)) {
+                                hasUnread = true;
+                                showToast(`رسالة من ${friend.name}`, last.text);
+                                document.getElementById('notifSound').play();
+                            }
                         }
+                        knownMsgs[friend.phone] = count;
                     }
-                    knownMsgs[friend.phone] = count;
                 }
                 const chatDot = document.getElementById('chatDot');
                 if (chatDot) chatDot.style.display = hasUnread ? 'block' : 'none';
@@ -376,19 +376,22 @@
             window.location.href = 'index.html';
         }
 
-        // تشغيل الوظائف عند التحميل
-        setDailyAdvice(); 
-        updateBadge(); 
-        updateCircle();
+        // --- تشغيل الوظائف عند التحميل ---
+        window.onload = function() {
+            setDailyAdvice(); 
+            updateBadge(); 
+            updateCircle();
 
-        // فحص الرسالة عند الفتح (سواء أول مرة أو بعد تسجيل دخول جديد)
-        checkBroadcast(); 
+            // 1. فحص الرسالة فور الدخول
+            checkBroadcast(); 
 
-        // تكرار فحص الرسالة كل ساعة تلقائياً (3600000 مللي ثانية)
-        setInterval(checkBroadcast, 3600000);
+            // 2. تكرار فحص الرسالة كل ساعة بالضبط
+            setInterval(checkBroadcast, 3600000); 
 
-        setInterval(checkGlobalNotifications, 15000);
-        checkGlobalNotifications();
+            // 3. فحص الإشعارات كل 15 ثانية
+            setInterval(checkGlobalNotifications, 15000);
+            checkGlobalNotifications();
+        }
     </script>
 </body>
 </html>
