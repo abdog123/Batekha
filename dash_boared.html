@@ -57,6 +57,7 @@
     </style>
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <audio id="cheerSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
@@ -378,6 +379,59 @@ function updateBadgeUI(count) {
 
 // فحص كل 5 ثواني بشكل دائم في الخلفية
 setInterval(syncGlobalNotifications, 2000);
+// نفس الرابط المستخدم في صفحة الشات
+const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
+let knownMessagesCount = {}; 
+
+function startGlobalNotificationCheck() {
+    const user = JSON.parse(localStorage.getItem('appUser'));
+    if (!user || !user.phone) return;
+
+    setInterval(async () => {
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+            const data = await res.json();
+            
+            for (const friend of data.friends) {
+                const msgRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${friend.phone}`);
+                const msgData = await msgRes.json();
+                
+                const currentCount = msgData.messages.length;
+                const lastCount = knownMessagesCount[friend.phone] || 0;
+
+                // إذا زاد عدد الرسائل عما نعرفه
+                if (currentCount > lastCount && lastCount !== 0) {
+                    const lastMsg = msgData.messages[currentCount - 1];
+                    // التأكد أن الرسالة من الطرف الآخر وليست مني
+                    if (String(lastMsg.sender) !== String(user.phone)) {
+                        Swal.fire({
+                            title: `رسالة جديدة من ${friend.name}`,
+                            text: lastMsg.text,
+                            toast: true,
+                            position: 'top-start',
+                            showConfirmButton: false,
+                            timer: 5000,
+                            timerProgressBar: true,
+                            background: '#202c33',
+                            color: '#fff',
+                            icon: 'info',
+                            didClick: () => {
+                                // اختياريا: توجيه المستخدم لصفحة الشات عند الضغط على التنبيه
+                                window.location.href = 'chat_page.html'; // استبدله باسم ملف الشات عندك
+                            }
+                        });
+                        // تشغيل صوت التنبيه
+                        new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play();
+                    }
+                }
+                knownMessagesCount[friend.phone] = currentCount;
+            }
+        } catch(e) { console.log("Notification Error"); }
+    }, 10000); // فحص كل 10 ثواني
+}
+
+// تشغيل الفحص عند تحميل صفحة الداشبورد
+window.addEventListener('load', startGlobalNotificationCheck);
 
     </script>
 </body>
