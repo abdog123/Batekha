@@ -14,7 +14,7 @@
         .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #161a26; position: sticky; top: 0; z-index: 1000; }
         .nav-icons { display: flex; gap: 12px; align-items: center; }
         .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
-        .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
+        .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; z-index: 10; }
 
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
@@ -36,7 +36,6 @@
         .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
         .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); display: block; }
 
-        /* --- تصميم العداد الجديد --- */
         .timer-full-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75vh; }
         .timer-container { position: relative; width: 260px; height: 260px; margin: 10px auto; }
         .timer-svg { transform: rotate(-90deg); width: 260px; height: 260px; }
@@ -46,13 +45,15 @@
         .time-selector { display: flex; gap: 8px; margin-bottom: 25px; }
         .time-btn { background: #161a26; border: 1px solid #2a3245; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
         .time-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
-        /* ----------------------- */
 
         .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
         .player-bar { position: fixed; bottom: 20px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .player-bar audio { flex: 1; height: 30px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* ستايل إضافي لرسائل الدردشة في صفحة التنبيهات */
+        .chat-notif-item { border-right-color: #3498db !important; background: rgba(52, 152, 219, 0.1) !important; }
     </style>
 </head>
 <body>
@@ -141,9 +142,38 @@
     </div>
 
     <script>
+        // --- إعدادات ربط شات Chel ---
+        const CHAT_SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbwzlFyxJTsGDQd0AdsXI5efJyOe14_o6dSVo4rSclMyE8TBLYa8_cIfV3sJZhagAW6-/exec";
+        let unreadChatCount = 0;
+        let lastKnownMsgCount = parseInt(localStorage.getItem('lastMsgCount')) || 0;
+
+        // وظيفة فحص الرسائل الجديدة
+        async function checkNewMessages() {
+            const user = JSON.parse(localStorage.getItem('appUser')); // نستخدم بيانات المستخدم المسجلة في شات Chel
+            if (!user || !user.phone) return;
+
+            try {
+                const res = await fetch(`${CHAT_SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+                const data = await res.json();
+                
+                // هنا نقوم بتبسيط المنطق: إذا تغيرت بيانات الأصدقاء أو الطلبات نعتبرها تنبيه
+                // يمكنك تطويرها لجلب عدد الرسائل غير المقروءة تحديداً إذا كان السيرفر يدعم ذلك
+                let currentCount = (data.received ? data.received.length : 0);
+                
+                if (currentCount > 0) {
+                    unreadChatCount = currentCount;
+                    updateBadge();
+                }
+            } catch (e) { console.log("Chat sync error"); }
+        }
+
+        // تشغيل الفحص كل 10 ثواني
+        setInterval(checkNewMessages, 10000);
+        checkNewMessages();
+
+        // --- باقي الكود الخاص بك بدون تغيير ---
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
-
         const advices = ["ابدأ يومك بصلاة الفجر، بركة اليوم تبدأ من هناك.", "المذاكرة لمدة 25 دقيقة بتركيز أفضل من 4 ساعات تشتت.", "لا تؤجل عمل اليوم إلى الغد، البطيخة الشاطرة تنجز أولاً بأول.", "اجعل لنفسك ورداً يومياً من القرآن، فإنه ينير العقل.", "تذكر دائماً فرحة أهلك يوم النتيجة، تستحق التعب!"];
 
         function setDailyAdvice() {
@@ -175,16 +205,15 @@
         }
         function goHome() { openPage('homePage'); }
 
-        // --- منطق العداد المحسن ---
         let timeLeft = 1500, totalTime = 1500, timerInterval = null;
-        const circumference = 2 * Math.PI * 125; // 785
+        const circumference = 2 * Math.PI * 125;
         document.getElementById('progressCircle').style.strokeDasharray = circumference;
 
         function setTimer(mins) {
             if(timerInterval) { Swal.fire({text: 'أوقف العداد أولاً يا بطل!', icon: 'info'}); return; }
             timeLeft = mins * 60; totalTime = timeLeft;
             document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            if(event) event.target.classList.add('active');
             updateUI(); updateCircle();
         }
 
@@ -206,7 +235,6 @@
         function updateCircle() { const offset = circumference - ((totalTime - timeLeft) / totalTime) * circumference; document.getElementById('progressCircle').style.strokeDashoffset = offset; }
         function resetT() { clearInterval(timerInterval); timerInterval = null; timeLeft = totalTime; updateUI(); updateCircle(); document.getElementById('tBtn').innerText = "بدء"; }
 
-        // --- المهام والبحث والقرآن (كما في كودك) ---
         function loadT() {
             document.getElementById('tList').innerHTML = tasks.map((t, i) => `
                 <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
@@ -272,15 +300,29 @@
 
         function loadNotifs() {
             const undone = tasks.filter(t => !t.done);
-            document.getElementById('notifContent').innerHTML = undone.length > 0 ? 
+            let content = "";
+            
+            // إضافة تنبيه الشات إذا وجد
+            if (unreadChatCount > 0) {
+                content += `<div class="task-item chat-notif-item" onclick="window.location.href='chel.html'">
+                    <span><b>تحدي الأصدقاء:</b> لديك طلبات أو رسائل جديدة! 💬</span>
+                    <i class="fas fa-comment-dots"></i>
+                </div>`;
+            }
+
+            content += undone.length > 0 ? 
                 `<div class="notif-warning">وراك ${undone.length} مهمة مستنية تخلص! 🍉</div>` + undone.map(t => `<div class="task-item">${t.text}</div>`).join('') :
-                `<p style="text-align:center; opacity:0.5;">كلو تمام يا بطيخة!</p>`;
+                (unreadChatCount === 0 ? `<p style="text-align:center; opacity:0.5;">كلو تمام يا بطيخة!</p>` : "");
+                
+            document.getElementById('notifContent').innerHTML = content;
         }
 
         function updateBadge() {
-            const count = tasks.filter(t => !t.done).length;
+            const taskCount = tasks.filter(t => !t.done).length;
+            const totalNotifs = taskCount + unreadChatCount;
             const b = document.getElementById('notifBadge');
-            b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none';
+            b.innerText = totalNotifs; 
+            b.style.display = totalNotifs > 0 ? 'flex' : 'none';
         }
 
         function logout() {
@@ -293,4 +335,3 @@
     </script>
 </body>
 </html>
-
