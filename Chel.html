@@ -37,7 +37,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
         
-        /* نظام الرسائل الجديدة */
         .new-messages-separator {
             display: flex; align-items: center; text-align: center; margin: 20px 0;
             color: var(--danger); font-size: 12px; font-weight: bold;
@@ -111,7 +110,7 @@
             <i class="fas fa-trophy"></i> تحدي نفسك (معكش صديق)
         </button>
 
-        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
+        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -194,7 +193,7 @@
         let globalSyncInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
-        let isFirstEntry = true; // متغير للتحكم في ظهور "NEW"
+        let isFirstEntry = true;
         
         let msgMemory = JSON.parse(localStorage.getItem('msgMemory')) || {};
         let friendsCache = JSON.parse(localStorage.getItem('friendsCache')) || { friends: [], received: [] };
@@ -212,6 +211,7 @@
             }
         }
 
+        // تسريع المزامنة العالمية إلى 0.5 ثانية
         function startGlobalSync() {
             if(globalSyncInterval) clearInterval(globalSyncInterval);
             globalSyncInterval = setInterval(async () => {
@@ -225,18 +225,29 @@
                     data.friends.forEach(f => {
                         const count = f.msgCount || 0;
                         const savedCount = msgMemory[f.phone] || 0;
-                        if(count > savedCount) totalNewMsgs = true;
                         
+                        // النقطة الحمراء بجانب كل صديق
                         const dot = document.getElementById(`dot-${f.phone}`);
-                        if(dot) dot.style.display = (count > savedCount) ? 'block' : 'none';
+                        if(count > savedCount) {
+                            totalNewMsgs = true;
+                            if(dot) dot.style.display = 'block';
+                        } else {
+                            if(dot) dot.style.display = 'none';
+                        }
                     });
                     
                     const hasReq = data.received && data.received.length > 0;
                     const mainMenuDot = document.getElementById('mainMenuDot');
+                    
+                    // النقطة الحمراء في القائمة الرئيسية
                     if(mainMenuDot) mainMenuDot.style.display = (totalNewMsgs || hasReq) ? 'block' : 'none';
                     
+                    // تحديث الكاش لتحديث واجهة أصدقائي إذا كانت مفتوحة
+                    if(document.getElementById('friendsPage').style.display === 'block') {
+                        renderFriends(data);
+                    }
                 } catch(e) {}
-            }, 2500); 
+            }, 500); 
         }
 
         function showSection(id) {
@@ -290,13 +301,13 @@
 
         async function openChat(name, phone) {
             isChatOpen = true;
-            isFirstEntry = true; // تفعيل "NEW" عند أول دخول
+            isFirstEntry = true; 
             window.currentChatPhone = phone;
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('chatFriendName').innerText = name;
             
             if (chatCache[phone]) {
-                renderMessages(chatCache[phone], true); // true تعني استخدام الكاش للمقارنة
+                renderMessages(chatCache[phone]);
                 lastMsgCount = chatCache[phone].length;
             } else {
                 document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري التحميل...</div>';
@@ -304,22 +315,21 @@
             }
             
             loadMessages();
-            chatInterval = setInterval(loadMessages, 2500);
+            // تسريع تحديث الشات إلى 0.5 ثانية
+            chatInterval = setInterval(loadMessages, 500);
         }
 
-        function renderMessages(messages, useCacheComparison = false) {
+        function renderMessages(messages) {
             const container = document.getElementById('chatMsgs');
             const user = JSON.parse(localStorage.getItem('appUser'));
             const phone = window.currentChatPhone;
             
-            // تحديد أين يبدأ الجديد
             let savedCount = msgMemory[phone] || 0;
             let html = "";
 
             messages.forEach((m, index) => {
                 const isMe = String(m.sender) === String(user.phone);
                 
-                // إضافة الخط الفاصل "NEW"
                 if (isFirstEntry && !isMe && index === savedCount && index < messages.length) {
                     html += `<div class="new-messages-separator">NEW</div>`;
                 }
@@ -350,13 +360,12 @@
                     renderMessages(data.messages);
                     lastMsgCount = data.messages.length;
                     
-                    // تحديث الكاش والذاكرة عند القراءة فقط
                     chatCache[phone] = data.messages;
                     msgMemory[phone] = data.messages.length;
                     localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
                     localStorage.setItem('chatCache', JSON.stringify(chatCache));
                     
-                    isFirstEntry = false; // إلغاء "NEW" بعد أول رؤية ناجحة
+                    isFirstEntry = false; 
                 }
             } catch(e) {}
         }
@@ -403,7 +412,6 @@
             }
         }
 
-        // نظام التحديات الفردية
         function startChallenge(type) {
             if(type === 'challenge1') {
                 Swal.fire({
