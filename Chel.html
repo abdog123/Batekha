@@ -21,6 +21,7 @@
 
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
         .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer;}
+        .main-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #555; }
         
         .sub-page { display: none; max-width: 500px; margin: auto; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -41,6 +42,9 @@
         .chat-input-area { padding: 10px; display: flex; gap: 8px; background: #202c33; align-items: center; }
         #chatInput { background: #2a3942; border: none; margin: 0; flex: 1; border-radius: 25px; padding: 12px 20px; color: white; }
         .send-btn { background: #00a884; width: 45px; height: 45px; border-radius: 50%; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        .refresh-icon { cursor: pointer; color: var(--accent); font-size: 18px; transition: transform 0.5s; }
+        .refresh-icon:active { transform: rotate(180deg); }
 
         .searching-text { text-align: center; color: var(--primary); font-size: 14px; padding: 15px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
@@ -65,7 +69,7 @@
         <button class="main-btn" onclick="showSection('friendsPage')">
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
+        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -73,7 +77,10 @@
     <div id="friendsPage" class="sub-page">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <div onclick="showSection('mainMenu')" style="cursor:pointer; font-weight:bold;"><i class="fas fa-arrow-right"></i> رجوع</div>
-            <span style="font-size: 14px; color: var(--accent);">الأصدقاء والطلبات</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-sync-alt refresh-icon" onclick="fetchFriendsData()" title="تحديث"></i>
+                <span style="font-size: 14px; color: var(--accent);">الأصدقاء والطلبات</span>
+            </div>
         </div>
         
         <div class="card">
@@ -84,7 +91,7 @@
             </div>
             <div id="searchResult" style="display:none; margin-top:15px; text-align:center;">
                 <p id="foundName" style="color:var(--accent); font-weight:bold;"></p>
-                <button onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
+                <button id="sendRequestBtn" onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
             </div>
         </div>
 
@@ -108,12 +115,13 @@
     </div>
 
     <script>
-        // رابط السكريبت الخاص بك
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
         
         let chatInterval = null;
+        let notifyInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
+        let knownMessagesCount = {}; // لتتبع عدد الرسائل لكل صديق للتنبيهات
 
         function initApp() {
             const user = JSON.parse(localStorage.getItem('appUser'));
@@ -121,9 +129,56 @@
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
+                startGlobalNotificationCheck();
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
+        }
+
+        // نظام التنبيهات العام (يعمل في الخلفية)
+        function startGlobalNotificationCheck() {
+            if (notifyInterval) clearInterval(notifyInterval);
+            notifyInterval = setInterval(async () => {
+                if (isChatOpen) return; // لا تظهر تنبيهات إذا كان الشات مفتوحاً بالفعل
+                
+                const user = JSON.parse(localStorage.getItem('appUser'));
+                try {
+                    const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+                    const data = await res.json();
+                    
+                    for (const friend of data.friends) {
+                        const msgRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${friend.phone}`);
+                        const msgData = await msgRes.json();
+                        
+                        const currentCount = msgData.messages.length;
+                        const lastCount = knownMessagesCount[friend.phone] || 0;
+
+                        if (currentCount > lastCount && lastCount !== 0) {
+                            const lastMsg = msgData.messages[currentCount - 1];
+                            if (String(lastMsg.sender) !== String(user.phone)) {
+                                showNotification(friend.name, lastMsg.text);
+                                playTone();
+                            }
+                        }
+                        knownMessagesCount[friend.phone] = currentCount;
+                    }
+                } catch(e) {}
+            }, 10000); // فحص كل 10 ثواني
+        }
+
+        function showNotification(sender, text) {
+            Swal.fire({
+                title: `رسالة جديدة من ${sender}`,
+                text: text,
+                toast: true,
+                position: 'top-start',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                background: '#202c33',
+                color: '#fff',
+                icon: 'info'
+            });
         }
 
         function saveAndLock() {
@@ -198,9 +253,10 @@
                     }).join('');
                     container.scrollTop = container.scrollHeight;
                     lastMsgCount = data.messages.length;
+                    knownMessagesCount[window.currentChatPhone] = lastMsgCount;
                     
-                    if (data.messages[data.messages.length-1].sender !== user.phone) {
-                        try { new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play(); } catch(e) {}
+                    if (data.messages[data.messages.length-1].sender !== user.phone && lastMsgCount !== 0) {
+                        playTone();
                     }
                 }
             } catch(e) {}
@@ -212,7 +268,6 @@
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
             
-            // إضافة فورية مع علامة الساعة (وهمي مؤقتاً)
             const container = document.getElementById('chatMsgs');
             const tempDiv = document.createElement('div');
             tempDiv.className = 'msg sent';
@@ -222,9 +277,7 @@
             inp.value = '';
 
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                const result = await res.json();
-                // التحديث القادم من السيرفر سيحول الساعة لصح
+                await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
             } catch(e) {
                 tempDiv.style.background = "#8b0000";
             }
@@ -248,22 +301,40 @@
                 document.getElementById('searchResult').style.display = 'block';
                 document.getElementById('foundName').innerText = data.name;
                 window.searchedPhone = p;
+                // إعادة الزر لوضعه الطبيعي عند بحث جديد
+                const btn = document.getElementById('sendRequestBtn');
+                btn.innerHTML = 'إرسال طلب صداقة ➕';
+                btn.disabled = false;
             } else {
                 Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
             }
         }
 
         async function sendFriendRequest() {
+            const btn = document.getElementById('sendRequestBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+            btn.disabled = true;
+
             const user = JSON.parse(localStorage.getItem('appUser'));
-            await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
-            Swal.fire('تم', 'تم إرسال طلب الصداقة', 'success');
-            document.getElementById('searchResult').style.display = 'none';
+            try {
+                await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
+                Swal.fire('تم', 'تم إرسال طلب الصداقة بنجاح', 'success');
+                document.getElementById('searchResult').style.display = 'none';
+            } catch (e) {
+                Swal.fire('خطأ', 'فشل في إرسال الطلب', 'error');
+                btn.innerHTML = 'إرسال طلب صداقة ➕';
+                btn.disabled = false;
+            }
         }
 
         async function respond(phone, act) {
             const user = JSON.parse(localStorage.getItem('appUser'));
             await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
             fetchFriendsData();
+        }
+
+        function playTone() {
+            try { new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play(); } catch(e) {}
         }
 
         initApp();
