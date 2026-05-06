@@ -8,13 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
-            --primary: #3498db; 
-            --dark: #0a0a0a; 
-            --accent: #2ed573; 
-            --card: rgba(255,255,255,0.08);
-            --wa-bg: #0b141a;
-            --wa-sent: #005c4b;
-            --wa-received: #202c33;
+            --primary: #3498db; --dark: #0a0a0a; --accent: #2ed573; 
+            --card: rgba(255,255,255,0.08); --wa-bg: #0b141a;
+            --wa-sent: #005c4b; --wa-received: #202c33;
         }
         
         body { 
@@ -23,44 +19,41 @@
             overscroll-behavior-y: contain; overflow-x: hidden;
         }
 
-        .main-btn, button { transition: all 0.2s ease; cursor: pointer; border: none; outline: none; }
-        .main-btn:active, button:active { transform: scale(0.95); opacity: 0.8; }
-
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
-        
-        .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer;}
         
         .sub-page { display: none; max-width: 500px; margin: auto; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
         input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
 
-        /* شات ثيم واتساب الجديد */
         #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); z-index: 1000; display: none; flex-direction: column; }
-        .chat-header { padding: 12px 15px; background: #202c33; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 4px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: #0b141a; }
+        .chat-header { padding: 12px 15px; background: #202c33; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 6px; background-color: #0b141a; }
         
-        .msg { padding: 8px 12px; border-radius: 10px; max-width: 75%; font-size: 15px; position: relative; color: #e9edef; line-height: 1.5; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
-        .msg.sent { background: var(--wa-sent); align-self: flex-start; border-top-right-radius: 0; margin-left: 10px; }
-        .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 0; margin-right: 10px; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 75%; font-size: 15px; position: relative; color: #e9edef; line-height: 1.5; }
+        .msg.sent { background: var(--wa-sent); align-self: flex-start; border-top-right-radius: 0; }
+        .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 0; }
         
         .msg-info { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; margin-top: 4px; opacity: 0.7; }
-        .status-tick { font-size: 12px; }
-        .status-tick.read { color: #53bdeb; }
+        .status-tick { font-size: 11px; }
 
         .chat-input-area { padding: 10px; display: flex; gap: 8px; background: #202c33; align-items: center; }
-        #chatInput { background: #2a3942; border: none; margin: 0; flex: 1; border-radius: 25px; padding: 12px 20px; }
-        .send-btn { background: #00a884; width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        #chatInput { background: #2a3942; border: none; margin: 0; flex: 1; border-radius: 25px; padding: 12px 20px; color: white; }
+        .send-btn { background: #00a884; width: 45px; height: 45px; border-radius: 50%; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        .searching-text { text-align: center; color: var(--primary); font-size: 14px; padding: 15px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
     <div id="setupOverlay" style="display:none; position:fixed; inset:0; background:var(--dark); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
         <div class="card" style="width:100%; max-width:350px; text-align:center;">
-            <h2 style="color:var(--primary);">مرحباً بك في الساحة 🤝</h2>
+            <h2 style="color:var(--primary);">ساحة الأصدقاء 🍉</h2>
             <input type="text" id="setupName" placeholder="الاسم الكامل">
-            <input type="tel" id="setupPhone" placeholder="رقم الهاتف">
-            <button id="setupBtn" onclick="saveAndLock()" class="main-btn">دخول ✅</button>
+            <input type="tel" id="setupPhone" placeholder="رقم الهاتف (01...)">
+            <button onclick="saveAndLock()" class="main-btn">دخول ✅</button>
         </div>
     </div>
 
@@ -69,81 +62,68 @@
             <div style="font-size:28px; font-weight:bold; color:var(--primary);">ساحة الأصدقاء 🤝</div>
             <div id="welcomeUser" style="margin-top:10px; color:var(--accent); font-size:18px;"></div>
         </div>
-        <button class="main-btn" onclick="goToFriends()">
+        <button class="main-btn" onclick="showSection('friendsPage')">
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
+        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
 
     <div id="friendsPage" class="sub-page">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <div onclick="showSection('mainMenu')" style="cursor:pointer; padding:5px; font-weight:bold;"><i class="fas fa-arrow-right"></i> رجوع</div>
-            <button onclick="fetchFriendsData()" style="background:transparent; color:var(--accent); border:1px solid var(--accent); padding:5px 10px; border-radius:8px;"><i class="fas fa-sync-alt"></i></button>
+            <div onclick="showSection('mainMenu')" style="cursor:pointer; font-weight:bold;"><i class="fas fa-arrow-right"></i> رجوع</div>
+            <span style="font-size: 14px; color: var(--accent);">الأصدقاء والطلبات</span>
         </div>
+        
         <div class="card">
-            <h4><i class="fas fa-search"></i> ابحث عن صديق</h4>
+            <h4><i class="fas fa-search"></i> ابحث عن صديق برقم الهاتف</h4>
             <div style="display:flex; gap:8px;">
-                <input type="tel" id="friendPhone" placeholder="رقم الهاتف" style="margin:0;">
-                <button onclick="searchFriend()" id="searchBtn" style="background:var(--primary); padding:0 15px; border-radius:12px;"><i class="fas fa-search"></i></button>
+                <input type="tel" id="friendPhone" placeholder="01xxxxxxxxx" style="margin:0;">
+                <button onclick="searchFriend()" style="background:var(--primary); padding:0 15px; border-radius:12px; border:none; color:white;"><i class="fas fa-search"></i></button>
             </div>
             <div id="searchResult" style="display:none; margin-top:15px; text-align:center;">
                 <p id="foundName" style="color:var(--accent); font-weight:bold;"></p>
-                <button id="sendReqBtn" onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
+                <button onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
             </div>
         </div>
-        <h4 style="color:var(--primary);">طلبات الصداقة</h4>
-        <div id="receivedList"></div>
+
+        <h4 style="color:var(--primary);">طلبات الصداقة المستلمة</h4>
+        <div id="receivedList"><div class="searching-text">جاري البحث عن طلبات...</div></div>
+
         <h4 style="color:var(--accent);">أصدقائي</h4>
-        <div id="friendsList"></div>
+        <div id="friendsList"><div class="searching-text">جاري البحث عن أصدقاء...</div></div>
     </div>
 
     <div id="chatPage">
         <div class="chat-header">
             <i class="fas fa-arrow-right" onclick="closeChat()" style="cursor:pointer; font-size:20px;"></i>
-            <div style="width:35px; height:35px; border-radius:50%; background:#6a7175; display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
-            <span id="chatFriendName" style="font-weight:bold; font-size:17px; flex:1;">الاسم</span>
+            <span id="chatFriendName" style="font-weight:bold; font-size:17px; flex:1;">...</span>
         </div>
         <div class="chat-messages" id="chatMsgs"></div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="اكتب رسالة..." autocomplete="off">
-            <button onclick="sendChatMessage()" class="send-btn" id="sendChatBtn"><i class="fas fa-paper-plane"></i></button>
+            <button onclick="sendChatMessage()" class="send-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbwzlFyxJTsGDQd0AdsXI5efJyOe14_o6dSVo4rSclMyE8TBLYa8_cIfV3sJZhagAW6-/exec";
+        // رابط السكريبت الخاص بك
+        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
+        
         let chatInterval = null;
-        let globalNotifyInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
 
         function initApp() {
-            if ("Notification" in window) Notification.requestPermission();
             const user = JSON.parse(localStorage.getItem('appUser'));
             if (user && user.phone) {
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
-                startGlobalNotifications(); // تشغيل فحص الرسائل العام
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
-        }
-
-        // فحص الرسائل في الخلفية (حتى لو الشات مقفول)
-        function startGlobalNotifications() {
-            if (globalNotifyInterval) clearInterval(globalNotifyInterval);
-            globalNotifyInterval = setInterval(async () => {
-                if (isChatOpen) return; // لا تظهر نوتفكيشن لو الشات مفتوح بالفعل
-                const user = JSON.parse(localStorage.getItem('appUser'));
-                try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
-                    const data = await res.json();
-                    // هنا يمكن إضافة منطق لمقارنة عدد الرسائل الكلي وتنبيه المستخدم
-                } catch(e) {}
-            }, 10000); // فحص كل 10 ثواني
         }
 
         function saveAndLock() {
@@ -166,67 +146,62 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                 const data = await res.json();
+                
                 document.getElementById('friendsList').innerHTML = data.friends.map(f => `
-                    <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
-                            <b>${f.name}</b>
-                        </div>
+                    <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; cursor:pointer;">
+                        <b>${f.name}</b>
                         <i class="fas fa-chevron-left" style="opacity:0.3;"></i>
                     </div>
-                `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>';
+                `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء بعد</p>';
 
                 document.getElementById('receivedList').innerHTML = data.received.map(r => `
                     <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
                         <span><b>${r.name}</b></span>
-                        <div style="display:flex; gap:8px;">
-                            <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:5px 12px; border-radius:8px;">قبول</button>
-                            <button onclick="respond('${r.phone}', 'reject')" style="background:#ff4757; color:white; padding:5px 12px; border-radius:8px;">رفض</button>
-                        </div>
+                        <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:5px 12px; border-radius:8px; border:none; cursor:pointer;">قبول</button>
                     </div>
-                `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات</p>';
+                `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات معلقة</p>';
             } catch(e) {}
         }
 
-        function openChat(name, phone) {
+        async function openChat(name, phone) {
             isChatOpen = true;
             window.currentChatPhone = phone;
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('chatFriendName').innerText = name;
-            document.getElementById('chatMsgs').innerHTML = '';
+            document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري تحميل المحادثة...</div>';
             lastMsgCount = 0;
+            
             loadMessages();
-            chatInterval = setInterval(loadMessages, 2000);
+            chatInterval = setInterval(loadMessages, 3000);
         }
 
         async function loadMessages() {
+            if(!isChatOpen) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
-            if(!window.currentChatPhone) return;
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
-                if (data.messages.length > lastMsgCount) {
+                
+                if (data.messages && data.messages.length > lastMsgCount) {
                     const container = document.getElementById('chatMsgs');
                     container.innerHTML = data.messages.map(m => {
-                        const isMe = m.sender === user.phone;
-                        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const isMe = String(m.sender) === String(user.phone);
                         return `
                             <div class="msg ${isMe ? 'sent' : 'received'}">
                                 ${m.text}
                                 <div class="msg-info">
-                                    <span>${time}</span>
-                                    ${isMe ? '<i class="fas fa-check-double status-tick read"></i>' : ''}
+                                    <span>${m.time || ''}</span>
+                                    ${isMe ? '<i class="fas fa-check status-tick"></i>' : ''}
                                 </div>
                             </div>
                         `;
                     }).join('');
                     container.scrollTop = container.scrollHeight;
-
-                    if (data.messages[data.messages.length - 1].sender !== user.phone && lastMsgCount > 0) {
-                        playTone();
-                        showNotification(document.getElementById('chatFriendName').innerText, data.messages[data.messages.length - 1].text);
-                    }
                     lastMsgCount = data.messages.length;
+                    
+                    if (data.messages[data.messages.length-1].sender !== user.phone) {
+                        try { new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play(); } catch(e) {}
+                    }
                 }
             } catch(e) {}
         }
@@ -237,39 +212,23 @@
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
             
-            // إضافة فورية مع علامة الساعة
+            // إضافة فورية مع علامة الساعة (وهمي مؤقتاً)
             const container = document.getElementById('chatMsgs');
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const tempId = 'temp_' + Date.now();
-            container.innerHTML += `
-                <div class="msg sent" id="${tempId}">
-                    ${text}
-                    <div class="msg-info"><span>${time}</span> <i class="fas fa-clock status-tick"></i></div>
-                </div>
-            `;
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'msg sent';
+            tempDiv.innerHTML = `${text}<div class="msg-info"><span>الآن</span> <i class="fas fa-clock status-tick"></i></div>`;
+            container.appendChild(tempDiv);
             container.scrollTop = container.scrollHeight;
             inp.value = '';
 
             try {
-                await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                // تحديث علامة الساعة لصح عند النجاح
-                const tempMsg = document.getElementById(tempId);
-                if(tempMsg) tempMsg.querySelector('.status-tick').className = 'fas fa-check status-tick';
+                const res = await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
+                const result = await res.json();
+                // التحديث القادم من السيرفر سيحول الساعة لصح
             } catch(e) {
-                const tempMsg = document.getElementById(tempId);
-                if(tempMsg) tempMsg.style.background = '#8b0000';
+                tempDiv.style.background = "#8b0000";
             }
         }
-
-        function showNotification(sender, text) {
-            if (Notification.permission === "granted") {
-                new Notification(sender, { body: text });
-            } else {
-                Swal.fire({ toast: true, position: 'top-end', title: sender, text: text, timer: 3000, showConfirmButton: false });
-            }
-        }
-
-        function playTone() { try { new Audio('https://www.soundjay.com/buttons/beep-07a.mp3').play(); } catch(e) {} }
 
         function closeChat() {
             isChatOpen = false;
@@ -278,7 +237,35 @@
             window.currentChatPhone = null;
         }
 
-        function goToFriends() { showSection('friendsPage'); }
+        async function searchFriend() {
+            const p = document.getElementById('friendPhone').value;
+            if(!p) return;
+            Swal.showLoading();
+            const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
+            const data = await res.json();
+            Swal.close();
+            if(data.found) {
+                document.getElementById('searchResult').style.display = 'block';
+                document.getElementById('foundName').innerText = data.name;
+                window.searchedPhone = p;
+            } else {
+                Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
+            }
+        }
+
+        async function sendFriendRequest() {
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
+            Swal.fire('تم', 'تم إرسال طلب الصداقة', 'success');
+            document.getElementById('searchResult').style.display = 'none';
+        }
+
+        async function respond(phone, act) {
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
+            fetchFriendsData();
+        }
+
         initApp();
     </script>
 </body>
