@@ -3,258 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ساحة الأصدقاء 🤝</title>
+    <title>منصة بطيختي 🍉 - النسخة النهائية</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #3498db; --dark: #0a0a0a; --accent: #2ed573; --card: rgba(255,255,255,0.08); }
+        :root { --main-bg: #0f121d; --card-bg: #1a1f2e; --accent: #2ed573; --primary: #764ba2; --text: #ffffff; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--main-bg); color: var(--text); margin: 0; padding-bottom: 30px; overflow-x: hidden; }
+
+        .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #161a26; position: sticky; top: 0; z-index: 1000; }
+        .nav-icons { display: flex; gap: 12px; align-items: center; }
+        .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
+        .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
+
+        .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
+        .active-page { display: block; }
+        .back-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--accent); cursor: pointer; font-weight: bold; }
         
-        body { 
-            background: var(--dark); color: #fff; margin: 0; padding: 15px; 
-            font-family: 'Segoe UI', sans-serif; text-align: right;
-            overscroll-behavior-y: contain; overflow-x: hidden;
-        }
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; }
+        .tool-card { background: var(--card-bg); padding: 25px; border-radius: 22px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+        .tool-card i { font-size: 30px; color: var(--accent); margin-bottom: 12px; display: block; }
+        .challenge-card { background: linear-gradient(45deg, #f093fb, #f5576c); grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px; }
 
-        .main-btn, button { transition: all 0.2s ease; cursor: pointer; border: none; outline: none; }
-        .main-btn:active, button:active { transform: scale(0.95); opacity: 0.8; }
-        .main-btn:hover { box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); }
+        .advice-section { margin: 20px 10px; background: linear-gradient(135deg, #2c3e50, #000000); padding: 20px; border-radius: 25px; border: 1px solid rgba(46, 213, 115, 0.3); position: relative; overflow: hidden; }
+        .advice-title { color: var(--accent); font-size: 14px; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .advice-text { font-size: 15px; line-height: 1.6; color: #eee; }
 
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
-        
-        .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        
-        .sub-page { display: none; max-width: 500px; margin: auto; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .profile-card { background: var(--card-bg); border-radius: 30px; padding: 25px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .profile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(45deg, var(--primary), var(--accent)); z-index: 0; }
+        .profile-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; z-index: 1; margin-top: 10px; background: #2a3245; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); display: block; }
 
-        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
+        /* --- تصميم العداد الجديد --- */
+        .timer-full-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75vh; }
+        .timer-container { position: relative; width: 260px; height: 260px; margin: 10px auto; }
+        .timer-svg { transform: rotate(-90deg); width: 260px; height: 260px; }
+        .timer-circle-bg { fill: none; stroke: #2a3245; stroke-width: 10; }
+        .timer-circle-progress { fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 816; stroke-dashoffset: 816; transition: 0.3s; }
+        .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 55px; font-weight: bold; font-family: monospace; }
+        .time-selector { display: flex; gap: 8px; margin-bottom: 25px; }
+        .time-btn { background: #161a26; border: 1px solid #2a3245; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .time-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; }
+        /* ----------------------- */
 
-        #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 1000; display: none; flex-direction: column; }
-        .chat-header { padding: 15px; background: #161a26; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-size: contain; }
-        .msg { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 14px; line-height: 1.4; position: relative; color: white; }
-        .msg.sent { background: #056162; align-self: flex-start; border-bottom-right-radius: 2px; }
-        .msg.received { background: #262d31; align-self: flex-end; border-bottom-left-radius: 2px; }
-        .chat-input-area { padding: 10px; display: flex; gap: 10px; background: #1e2428; align-items: center; }
+        .task-item { background: var(--card-bg); padding: 18px; border-radius: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid var(--accent); }
+        .player-bar { position: fixed; bottom: 20px; left: 10px; right: 10px; background: var(--primary); padding: 10px 15px; border-radius: 15px; display: none; align-items: center; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .player-bar audio { flex: 1; height: 30px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="setupOverlay" style="display:none; position:fixed; inset:0; background:var(--dark); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
-        <div class="card" style="width:100%; max-width:350px; text-align:center;">
-            <h2 style="color:var(--primary);">مرحباً بك في الساحة 🤝</h2>
-            <p style="font-size:12px; color:#888;">سجل بياناتك لمرة واحدة فقط للبدء</p>
-            <input type="text" id="setupName" placeholder="الاسم الكامل">
-            <input type="tel" id="setupPhone" placeholder="رقم الهاتف">
-            <button id="setupBtn" onclick="saveAndLock()" class="main-btn">دخول ✅</button>
+    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <audio id="cheerSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
+    <div class="top-nav">
+        <h3 onclick="goHome()" style="cursor:pointer; margin:0;">بطيختي 🍉</h3>
+        <div class="nav-icons">
+            <div class="icon-circle" onclick="openPage('notifPage')"><i class="fas fa-bell"></i><span class="badge" id="notifBadge">0</span></div>
+            <div class="icon-circle" onclick="openPage('profilePage')"><i class="fas fa-user"></i></div>
         </div>
     </div>
 
-    <div id="mainMenu" class="sub-page">
-        <div style="text-align:center; margin:40px 0;">
-            <div style="font-size:28px; font-weight:bold; color:var(--primary);">ساحة الأصدقاء 🤝</div>
-            <div id="welcomeUser" style="margin-top:10px; color:var(--accent); font-size:18px;"></div>
-        </div>
-        
-        <button class="main-btn" onclick="goToFriends()">
-            <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
-        </button>
-        
-        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
-            <i class="fas fa-home"></i> العودة للمنصة الرئيسية
-        </button>
-    </div>
-
-    <div id="friendsPage" class="sub-page">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <div onclick="showSection('mainMenu')" style="cursor:pointer; padding:5px; font-weight:bold;"><i class="fas fa-arrow-right"></i> رجوع</div>
-            <button onclick="fetchFriendsData()" id="refreshBtn" style="background:var(--card); color:var(--accent); padding:8px 15px; border-radius:10px; border:1px solid var(--accent);">
-                <i class="fas fa-sync-alt"></i> تحديث القائمة
-            </button>
-        </div>
-
-        <div class="card">
-            <h4><i class="fas fa-search"></i> ابحث عن صديق</h4>
-            <div style="display:flex; gap:8px;">
-                <input type="tel" id="friendPhone" placeholder="أدخل رقم الهاتف" style="margin:0;">
-                <button onclick="searchFriend()" id="searchBtn" style="background:var(--primary); padding:0 20px; border-radius:12px; color:white;"><i class="fas fa-search"></i></button>
+    <div id="homePage" class="page active-page">
+        <div class="tools-grid">
+            <div class="tool-card challenge-card" onclick="window.location.href='Chel.html'">
+                <i class="fas fa-trophy" style="margin:0; color:white;"></i>
+                <h3 style="margin:0;">تحدي الأصدقاء 🔥</h3>
             </div>
-            <div id="searchResult" style="display:none; margin-top:20px; text-align:center; border-top:1px solid #333; padding-top:15px;">
-                <p id="foundName" style="color:var(--accent); font-weight:bold; font-size:18px;"></p>
-                <button id="sendReqBtn" onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
-            </div>
+            <div class="tool-card" onclick="openPage('subjectsPage')"><i class="fas fa-play-circle"></i><h4>المواد</h4></div>
+            <div class="tool-card" onclick="openPage('quranPage')"><i class="fas fa-quran"></i><h4>القرآن</h4></div>
+            <div class="tool-card" onclick="openPage('tasksPage')"><i class="fas fa-check-circle"></i><h4>المهام</h4></div>
+            <div class="tool-card" onclick="openPage('timerPage')"><i class="fas fa-stopwatch"></i><h4>العداد</h4></div>
         </div>
-
-        <h4 style="color:var(--primary); margin-top:25px;">طلبات الصداقة</h4>
-        <div id="receivedList"></div>
-        
-        <h4 style="color:var(--accent); margin-top:25px;">أصدقائي (اضغط للدردشة)</h4>
-        <div id="friendsList"></div>
+        <div class="advice-section">
+            <div class="advice-title"><i class="fas fa-lightbulb"></i> نصيحة اليوم للبطيخة الشاطرة</div>
+            <div class="advice-text" id="dailyAdvice">حمل النصيحة...</div>
+        </div>
     </div>
 
-    <div id="chatPage">
-        <div class="chat-header">
-            <i class="fas fa-arrow-right" onclick="closeChat()" style="cursor:pointer; font-size:20px;"></i>
-            <span id="chatFriendName" style="font-weight:bold; font-size:18px;">الاسم</span>
+    <div id="profilePage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div class="profile-card">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img">
+            <h2 id="pName">--</h2>
+            <p id="pYearText">--</p>
+            <div class="stats-grid">
+                <div class="stat-box"><span class="stat-num" id="statDone">0</span><span>إنجاز دائم</span></div>
+                <div class="stat-box"><span class="stat-num" id="statPoints">0</span><span>نقاطي الكلية</span></div>
+            </div>
+            <button onclick="logout()" style="background:#ff4757; color:white; border:none; padding:15px; width:100%; border-radius:15px; margin-top:20px; font-weight:bold; cursor:pointer;">تسجيل الخروج</button>
         </div>
-        <div class="chat-messages" id="chatMsgs"></div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="اكتب رسالة محترمة..." style="margin:0;">
-            <button onclick="sendChatMessage()" id="sendChatBtn" style="background:var(--accent); width:55px; height:48px; border-radius:15px; color:black; font-size:20px;"><i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <div id="timerPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div class="timer-full-page">
+            <div class="time-selector">
+                <button class="time-btn" onclick="setTimer(15)">15د</button>
+                <button class="time-btn active" id="btn25" onclick="setTimer(25)">25د</button>
+                <button class="time-btn" onclick="setTimer(45)">45د</button>
+                <button class="time-btn" onclick="setTimer(60)">60د</button>
+            </div>
+            <div class="timer-container">
+                <svg class="timer-svg">
+                    <circle class="timer-circle-bg" cx="130" cy="130" r="125"></circle>
+                    <circle id="progressCircle" class="timer-circle-progress" cx="130" cy="130" r="125"></circle>
+                </svg>
+                <div class="timer-text" id="tDisplay">25:00</div>
+            </div>
+            <div style="text-align:center; display: flex; justify-content: center; gap: 15px; margin-top: 25px;">
+                <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold; color:#000; font-size:18px;">بدء</button>
+                <button onclick="resetT()" style="background:#ff4757; border:none; padding:18px; border-radius:18px; color: white;"><i class="fas fa-redo"></i></button>
+            </div>
         </div>
+    </div>
+
+    <div id="tasksPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة؟">
+            <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px;"><i class="fas fa-plus"></i></button>
+        </div>
+        <div id="tList"></div>
+    </div>
+
+    <div id="subjectsPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div></div>
+    <div id="quranPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="quranList"></div></div>
+    <div id="notifPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="notifContent"></div></div>
+
+    <div id="playerBar" class="player-bar">
+        <audio id="mainAudio" controls></audio>
+        <i class="fas fa-times" onclick="stopAudio()" style="margin-right:10px; cursor:pointer; color:#fff;"></i>
     </div>
 
     <script>
-        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbwzlFyxJTsGDQd0AdsXI5efJyOe14_o6dSVo4rSclMyE8TBLYa8_cIfV3sJZhagAW6-/exec";
-        let chatInterval = null;
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
 
-        function initApp() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            if (user && user.phone) {
-                document.getElementById('setupOverlay').style.display = 'none';
-                
-                // حفظ الصفحة الحالية عند الريفرش
-                const lastPage = localStorage.getItem('lastPage') || 'mainMenu';
-                showSection(lastPage);
-                if(lastPage === 'friendsPage') fetchFriendsData();
+        const advices = ["ابدأ يومك بصلاة الفجر، بركة اليوم تبدأ من هناك.", "المذاكرة لمدة 25 دقيقة بتركيز أفضل من 4 ساعات تشتت.", "لا تؤجل عمل اليوم إلى الغد، البطيخة الشاطرة تنجز أولاً بأول.", "اجعل لنفسك ورداً يومياً من القرآن، فإنه ينير العقل.", "تذكر دائماً فرحة أهلك يوم النتيجة، تستحق التعب!"];
 
-                document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
-            } else {
-                document.getElementById('setupOverlay').style.display = 'flex';
+        function setDailyAdvice() {
+            const date = new Date().toDateString();
+            let hash = 0; for (let i = 0; i < date.length; i++) { hash = date.charCodeAt(i) + ((hash << 5) - hash); }
+            document.getElementById('dailyAdvice').innerText = advices[Math.abs(hash) % advices.length];
+        }
+
+        function getStudentData() { return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3", branch: "علمي علوم" }; }
+        function getYearName(y) { return {"1": "الأول", "2": "الثاني", "3": "الثالث"}[String(y)] || y; }
+
+        function loadProfileData() {
+            const user = getStudentData();
+            document.getElementById('pName').innerText = user.name;
+            document.getElementById('pYearText').innerText = `الصف ${getYearName(user.year)} ثانوي - ${user.branch}`;
+            document.getElementById('statDone').innerText = totalFinishedCount;
+            document.getElementById('statPoints').innerText = totalFinishedCount * 10;
+        }
+
+        function openPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById(id).classList.add('active-page');
+            if(id === 'profilePage') loadProfileData();
+            if(id === 'tasksPage') loadT();
+            if(id === 'subjectsPage') loadS();
+            if(id === 'quranPage') loadQ();
+            if(id === 'notifPage') loadNotifs();
+            updateBadge();
+        }
+        function goHome() { openPage('homePage'); }
+
+        // --- منطق العداد المحسن ---
+        let timeLeft = 1500, totalTime = 1500, timerInterval = null;
+        const circumference = 2 * Math.PI * 125; // 785
+        document.getElementById('progressCircle').style.strokeDasharray = circumference;
+
+        function setTimer(mins) {
+            if(timerInterval) { Swal.fire({text: 'أوقف العداد أولاً يا بطل!', icon: 'info'}); return; }
+            timeLeft = mins * 60; totalTime = timeLeft;
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateUI(); updateCircle();
+        }
+
+        function toggleT() {
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; document.getElementById('tBtn').innerText = "استكمال"; }
+            else {
+                timerInterval = setInterval(() => {
+                    timeLeft--; updateUI(); updateCircle();
+                    if(timeLeft <= 0) { 
+                        clearInterval(timerInterval); timerInterval = null;
+                        document.getElementById('notifSound').play();
+                        Swal.fire({ title: 'انتهى الوقت! 🎉', text: 'عاش يا بطل، خد راحة شوية ويرجع كمل', icon: 'success' });
+                        resetT();
+                    }
+                }, 1000); document.getElementById('tBtn').innerText = "إيقاف";
             }
         }
-        initApp();
+        function updateUI() { const m = Math.floor(timeLeft/60), s = timeLeft%60; document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`; }
+        function updateCircle() { const offset = circumference - ((totalTime - timeLeft) / totalTime) * circumference; document.getElementById('progressCircle').style.strokeDashoffset = offset; }
+        function resetT() { clearInterval(timerInterval); timerInterval = null; timeLeft = totalTime; updateUI(); updateCircle(); document.getElementById('tBtn').innerText = "بدء"; }
 
-        function showSection(id) {
-            document.querySelectorAll('.sub-page').forEach(p => p.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-            localStorage.setItem('lastPage', id); // حفظ الصفحة
+        // --- المهام والبحث والقرآن (كما في كودك) ---
+        function loadT() {
+            document.getElementById('tList').innerHTML = tasks.map((t, i) => `
+                <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
+                    <span style="${t.done ? 'text-decoration:line-through' : ''}">${t.text}</span>
+                    <div>
+                        ${!t.done ? `<i class="fas fa-check-circle" onclick="confirmDone(${i})" style="color:var(--accent); cursor:pointer;"></i>` : ''}
+                        <i class="fas fa-trash" onclick="deleteTask(${i})" style="color:#ff4757; cursor:pointer; margin-right:10px;"></i>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function saveAndLock() {
-            const n = document.getElementById('setupName').value.trim();
-            const p = document.getElementById('setupPhone').value.trim();
-            if(n.length < 3 || p.length < 10) return Swal.fire('خطأ', 'يرجى إدخال بيانات صحيحة', 'error');
-            localStorage.setItem('appUser', JSON.stringify({ name: n, phone: p }));
-            initApp();
-        }
-
-        function searchFriend() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            let p = document.getElementById('friendPhone').value.trim();
-            if(p === user.phone) return Swal.fire('عفواً!', 'لا يمكنك إضافة نفسك يا بطل 🍉', 'warning');
-
-            document.getElementById('searchBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-            fetch(`${SCRIPT_URL}?action=searchUser&phone=${p}`)
-            .then(r => r.json()).then(data => {
-                document.getElementById('searchBtn').innerHTML = '<i class="fas fa-search"></i>';
-                if(data.status === 'success') {
-                    document.getElementById('searchResult').style.display = 'block';
-                    document.getElementById('foundName').innerText = data.user.name;
-                    window.targetPhone = data.user.phone;
-                } else { Swal.fire('غير موجود', 'هذا الرقم غير مسجل في المنصة', 'error'); }
+        function confirmDone(i) {
+            Swal.fire({ title: 'خلصت المهمة؟ 🍉', text: "سيتم إضافة 10 نقاط لرصيدك الدائم", icon: 'question', showCancelButton: true, confirmButtonColor: '#2ed573', confirmButtonText: 'نعم، تم بنجاح!', cancelButtonText: 'لسه شوية' }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('cheerSound').play();
+                    tasks[i].done = true; totalFinishedCount++;
+                    localStorage.setItem('totalFinishedCount', totalFinishedCount);
+                    saveT(); loadT();
+                    Swal.fire({ title: 'عاش يا وحش! 🔥', text: 'نقاطك زادت ورصيدك محفوظ للأبد', icon: 'success', timer: 2000, showConfirmButton: false });
+                }
             });
         }
 
-        async function sendFriendRequest() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            const btn = document.getElementById('sendReqBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
-
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=addFriend&sender=${user.phone}&receiver=${window.targetPhone}`);
-                const data = await res.json();
-                if(data.status === 'success') {
-                    Swal.fire('تم!', 'تم إرسال طلب الصداقة بنجاح', 'success');
-                    document.getElementById('searchResult').style.display = 'none';
-                } else { Swal.fire('تنبيه', data.message, 'info'); }
-            } catch(e) { Swal.fire('خطأ', 'فشل الإرسال، حاول لاحقاً', 'error'); }
-            btn.disabled = false; btn.innerHTML = 'إرسال طلب صداقة ➕';
+        function deleteTask(i) {
+            Swal.fire({ title: 'حذف المهمة؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'حذف' }).then((r) => {
+                if (r.isConfirmed) { tasks.splice(i, 1); saveT(); loadT(); }
+            });
         }
 
-        async function fetchFriendsData() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
-                const data = await res.json();
-                
-                document.getElementById('friendsList').innerHTML = data.friends.map(f => `
-                    <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; border-right: 4px solid var(--accent);">
-                        <span><i class="fas fa-user-circle"></i> ${f.name}</span>
-                        <i class="fas fa-comment-dots" style="color:var(--primary); font-size:20px;"></i>
-                    </div>
-                `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء حالياً</p>';
+        function addTask() {
+            const inp = document.getElementById('tInput'); if(!inp.value) return;
+            tasks.push({text: inp.value, done: false}); saveT(); inp.value = ""; loadT();
+        }
+        function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
 
-                document.getElementById('receivedList').innerHTML = data.received.map(r => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>${r.name} أرسل لك طلباً</span>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:5px 12px; border-radius:8px; font-weight:bold;">قبول</button>
-                            <button onclick="respond('${r.phone}', 'reject')" style="background:#ff4757; color:white; padding:5px 12px; border-radius:8px; font-weight:bold;">رفض</button>
-                        </div>
-                    </div>
-                `).join('') || '<p style="text-align:center; opacity:0.5;">لا توجد طلبات جديدة</p>';
-            } catch(e) {}
+        function loadS() {
+            const user = getStudentData(); const year = String(user.year); const branch = (user.branch || "").trim(); const yearName = getYearName(year);
+            let subs = [];
+            if (year === "1") subs = ["عربي", "رياضة", "انجليزي", "علوم متكاملة", "فرنساوي", "تربية دينية", "تاريخ"];
+            else if (year === "2") {
+                if (branch.includes("علمي")) subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "رياضة تطبيقية", "كيمياء", "فيزياء", "تاريخ", "دين"];
+                else subs = ["عربي", "انجليزي", "فرنساوي", "رياضة بحتة", "تاريخ", "فلسفة", "علم نفس", "جغرافيا", "دين"];
+            } else if (year === "3") {
+                if (branch.includes("علوم")) subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الأحياء", "الكيمياء", "الفيزياء"];
+                else if (branch.includes("رياض")) subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "الرياضيات", "الكيمياء", "الفيزياء"];
+                else subs = ["اللغة العربية", "اللغة الأجنبية الأولى", "التاريخ", "الجغرافيا", "علم النفس"];
+            }
+            document.getElementById('sGrid').innerHTML = subs.map(s => `<div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} للصف ${yearName} الثانوي ${branch}','_blank')"> <h4 style="font-size:13px;">${s}</h4> </div>`).join('');
         }
 
-        async function respond(target, status) {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            await fetch(`${SCRIPT_URL}?action=respondRequest&user=${user.phone}&target=${target}&status=${status}`);
-            fetchFriendsData();
+        async function loadQ() {
+            const list = document.getElementById('quranList'); if(list.innerHTML !== "") return;
+            const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
+            list.innerHTML = data.data.map(s => `<div class="task-item" onclick="playSurah(${s.number})"><span>${s.name}</span><i class="fas fa-play-circle" style="color:var(--accent)"></i></div>`).join('');
+        }
+        function playSurah(id) {
+            const bar = document.getElementById('playerBar'); const audio = document.getElementById('mainAudio');
+            audio.src = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${id}.mp3`;
+            bar.style.display = 'flex'; audio.play();
+        }
+        function stopAudio() { document.getElementById('mainAudio').pause(); document.getElementById('playerBar').style.display = 'none'; }
+
+        function loadNotifs() {
+            const undone = tasks.filter(t => !t.done);
+            document.getElementById('notifContent').innerHTML = undone.length > 0 ? 
+                `<div class="notif-warning">وراك ${undone.length} مهمة مستنية تخلص! 🍉</div>` + undone.map(t => `<div class="task-item">${t.text}</div>`).join('') :
+                `<p style="text-align:center; opacity:0.5;">كلو تمام يا بطيخة!</p>`;
         }
 
-        function openChat(name, phone) {
-            document.getElementById('chatPage').style.display = 'flex';
-            document.getElementById('chatFriendName').innerText = name;
-            window.currentChatPhone = phone;
-            loadMessages();
-            // تحديث فوري كل 0.5 ثانية
-            chatInterval = setInterval(loadMessages, 500); 
+        function updateBadge() {
+            const count = tasks.filter(t => !t.done).length;
+            const b = document.getElementById('notifBadge');
+            b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none';
         }
 
-        async function loadMessages() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
-                const data = await res.json();
-                const container = document.getElementById('chatMsgs');
-                
-                // تحديث الشات فقط إذا تغير عدد الرسائل لمنع الرعشة في الواجهة
-                const currentMsgs = data.messages.map(m => `
-                    <div class="msg ${m.sender === user.phone ? 'sent' : 'received'}">${m.text}</div>
-                `).join('');
-                
-                if (container.innerHTML !== currentMsgs) {
-                    container.innerHTML = currentMsgs;
-                    container.scrollTop = container.scrollHeight;
-                }
-            } catch(e) {}
+        function logout() {
+            Swal.fire({ title: 'خارج ليه يا بطيخة؟ 🍉', text: "متأكد إنك عايز تخرج؟ رصيدك ونقاطك هيفضلوا محفوظين", icon: 'warning', showCancelButton: true, confirmButtonColor: '#2ed573', cancelButtonColor: '#ff4757', confirmButtonText: 'أيوه، سلام دلوقتي', cancelButtonText: 'لا، خليني شوية' }).then((result) => {
+                if (result.isConfirmed) { localStorage.removeItem('activeStudent'); window.location.href = 'index.html'; }
+            });
         }
 
-        async function sendChatMessage() {
-            const inp = document.getElementById('chatInput');
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            const text = inp.value.trim();
-            if(!text) return;
-
-            // إضافة الرسالة في واجهة الباعت فوراً (تجربة مستخدم سريعة)
-            const container = document.getElementById('chatMsgs');
-            container.innerHTML += `<div class="msg sent">${text}</div>`;
-            container.scrollTop = container.scrollHeight;
-            
-            inp.value = ''; 
-            
-            try {
-                await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-            } catch(e) { Swal.fire('فشل', 'لم يتم إرسال الرسالة', 'error'); }
-        }
-
-        function closeChat() {
-            document.getElementById('chatPage').style.display = 'none';
-            clearInterval(chatInterval);
-        }
-
-        function goToFriends() { showSection('friendsPage'); fetchFriendsData(); }
+        setDailyAdvice(); updateBadge(); updateCircle();
     </script>
 </body>
 </html>
+
