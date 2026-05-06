@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة بطيختي 🍉 - النسخة النهائية</title>
+    <title>منصة بطيختي 🍉 - لوحة التحكم</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -15,9 +15,6 @@
         .nav-icons { display: flex; gap: 12px; align-items: center; }
         .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
         .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
-        
-        /* إشعار الرسائل الجديد */
-        .msg-toast { position: fixed; top: 70px; left: 15px; right: 15px; background: var(--primary); padding: 12px; border-radius: 12px; display: none; align-items: center; gap: 12px; z-index: 3000; animation: slideDown 0.5s ease; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
 
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
@@ -39,6 +36,7 @@
         .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
         .stat-num { font-size: 18px; font-weight: bold; color: var(--accent); display: block; }
 
+        /* --- تصميم العداد الجديد --- */
         .timer-full-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75vh; }
         .timer-container { position: relative; width: 260px; height: 260px; margin: 10px auto; }
         .timer-svg { transform: rotate(-90deg); width: 260px; height: 260px; }
@@ -54,18 +52,12 @@
         .player-bar audio { flex: 1; height: 30px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
     <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <audio id="cheerSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
-
-    <div id="msgToast" class="msg-toast" onclick="window.location.href='chel.html'">
-        <i class="fas fa-comment-dots"></i>
-        <span>لديك رسالة جديدة في الساحة! 💬</span>
-    </div>
 
     <div class="top-nav">
         <h3 onclick="goHome()" style="cursor:pointer; margin:0;">بطيختي 🍉</h3>
@@ -96,7 +88,7 @@
         <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
         <div class="profile-card">
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="profile-img">
-            <h2 id="pName">--</h2>
+            <h2 id="pName">تحميل...</h2>
             <p id="pYearText">--</p>
             <div class="stats-grid">
                 <div class="stat-box"><span class="stat-num" id="statDone">0</span><span>إنجاز دائم</span></div>
@@ -106,18 +98,58 @@
         </div>
     </div>
 
+    <div id="timerPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div class="timer-full-page">
+            <div class="time-selector">
+                <button class="time-btn" onclick="setTimer(15)">15د</button>
+                <button class="time-btn active" id="btn25" onclick="setTimer(25)">25د</button>
+                <button class="time-btn" onclick="setTimer(45)">45د</button>
+                <button class="time-btn" onclick="setTimer(60)">60د</button>
+            </div>
+            <div class="timer-container">
+                <svg class="timer-svg">
+                    <circle class="timer-circle-bg" cx="130" cy="130" r="125"></circle>
+                    <circle id="progressCircle" class="timer-circle-progress" cx="130" cy="130" r="125"></circle>
+                </svg>
+                <div class="timer-text" id="tDisplay">25:00</div>
+            </div>
+            <div style="text-align:center; display: flex; justify-content: center; gap: 15px; margin-top: 25px;">
+                <button id="tBtn" onclick="toggleT()" style="background:var(--accent); border:none; padding:18px 60px; border-radius:18px; font-weight:bold; color:#000; font-size:18px;">بدء</button>
+                <button onclick="resetT()" style="background:#ff4757; border:none; padding:18px; border-radius:18px; color: white;"><i class="fas fa-redo"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tasksPage" class="page">
+        <div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="tInput" style="flex:1; padding:15px; border-radius:15px; background:#161a26; border:1px solid #2a3245; color:white;" placeholder="مهمة جديدة؟">
+            <button onclick="addTask()" style="background:var(--accent); border:none; padding:15px 25px; border-radius:15px;"><i class="fas fa-plus"></i></button>
+        </div>
+        <div id="tList"></div>
+    </div>
+
+    <div id="subjectsPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="sGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div></div>
+    <div id="quranPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="quranList"></div></div>
+    <div id="notifPage" class="page"><div class="back-header" onclick="goHome()"><i class="fas fa-arrow-right"></i> العودة</div><div id="notifContent"></div></div>
+
+    <div id="playerBar" class="player-bar">
+        <audio id="mainAudio" controls></audio>
+        <i class="fas fa-times" onclick="stopAudio()" style="margin-right:10px; cursor:pointer; color:#fff;"></i>
+    </div>
+
     <script>
-        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbwzlFyxJTsGDQd0AdsXI5efJyOe14_o6dSVo4rSclMyE8TBLYa8_cIfV3sJZhagAW6-/exec";
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
 
-        // دالة التنقل الذكي مع الحفاظ على الصفحة
+        // دالة التنقل وإدارة الصفحات مع حفظ الحالة
         function openPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            document.getElementById(id).classList.add('active-page');
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active-page');
             
-            // حفظ الصفحة الحالية في المتصفح
-            localStorage.setItem('currentPage', id);
+            localStorage.setItem('lastPage', id); // حفظ الصفحة الحالية
 
             if(id === 'profilePage') loadProfileData();
             if(id === 'tasksPage') loadT();
@@ -127,47 +159,30 @@
             updateBadge();
         }
 
-        // عند فتح الصفحة لأول مرة أو عمل Refresh
-        window.onload = () => {
-            const savedPage = localStorage.getItem('currentPage');
-            if (savedPage) {
-                openPage(savedPage);
-            } else {
-                goHome();
-            }
-            setDailyAdvice();
-            updateBadge();
-            updateCircle();
-            checkNewMessages(); // بدء فحص الرسائل
-            setInterval(checkNewMessages, 5000); // كل 5 ثواني
-        };
-
-        async function checkNewMessages() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            if (!user) return;
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
-                const data = await res.json();
-                // إذا كان هناك طلبات معلقة (Received) نظهر إشعار
-                if (data.received && data.received.length > 0) {
-                    document.getElementById('msgToast').style.display = 'flex';
-                    setTimeout(() => { document.getElementById('msgToast').style.display = 'none'; }, 4000);
-                }
-            } catch(e) {}
-        }
-
         function goHome() { openPage('homePage'); }
 
-        // --- بقية الدوال الأصلية الخاصة بك (Advice, Timer, Tasks, etc.) ---
-        // (انسخ الدوال الأصلية بالكامل من كودك القديم وضعها هنا)
+        // تحميل الصفحة المحفوظة عند فتح التطبيق
+        window.onload = () => {
+            const savedPage = localStorage.getItem('lastPage') || 'homePage';
+            openPage(savedPage);
+            setDailyAdvice();
+            updateCircle();
+        };
+
         const advices = ["ابدأ يومك بصلاة الفجر، بركة اليوم تبدأ من هناك.", "المذاكرة لمدة 25 دقيقة بتركيز أفضل من 4 ساعات تشتت.", "لا تؤجل عمل اليوم إلى الغد، البطيخة الشاطرة تنجز أولاً بأول.", "اجعل لنفسك ورداً يومياً من القرآن، فإنه ينير العقل.", "تذكر دائماً فرحة أهلك يوم النتيجة، تستحق التعب!"];
+
         function setDailyAdvice() {
             const date = new Date().toDateString();
             let hash = 0; for (let i = 0; i < date.length; i++) { hash = date.charCodeAt(i) + ((hash << 5) - hash); }
             document.getElementById('dailyAdvice').innerText = advices[Math.abs(hash) % advices.length];
         }
-        function getStudentData() { return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3", branch: "علمي علوم" }; }
+
+        function getStudentData() { 
+            // محاولة جلب بيانات الطالب النشط، وإذا لم توجد نضع افتراضي
+            return JSON.parse(localStorage.getItem('activeStudent')) || { name: "طالب بطيخة", year: "3", branch: "علمي علوم" }; 
+        }
         function getYearName(y) { return {"1": "الأول", "2": "الثاني", "3": "الثالث"}[String(y)] || y; }
+
         function loadProfileData() {
             const user = getStudentData();
             document.getElementById('pName').innerText = user.name;
@@ -176,7 +191,126 @@
             document.getElementById('statPoints').innerText = totalFinishedCount * 10;
         }
 
-        // ... (أكمل بقية الدوال: Timer Logic, Tasks, Subjects, Quran, Logout)
+        // --- منطق العداد المحسن ---
+        let timeLeft = 1500, totalTime = 1500, timerInterval = null;
+        const circumference = 2 * Math.PI * 125; 
+        const circle = document.getElementById('progressCircle');
+        if(circle) circle.style.strokeDasharray = circumference;
+
+        function setTimer(mins) {
+            if(timerInterval) { Swal.fire({text: 'أوقف العداد أولاً يا بطل!', icon: 'info'}); return; }
+            timeLeft = mins * 60; totalTime = timeLeft;
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            if(event) event.target.classList.add('active');
+            updateUI(); updateCircle();
+        }
+
+        function toggleT() {
+            const btn = document.getElementById('tBtn');
+            if(timerInterval) { 
+                clearInterval(timerInterval); 
+                timerInterval = null; 
+                btn.innerText = "استكمال"; 
+            } else {
+                timerInterval = setInterval(() => {
+                    timeLeft--; updateUI(); updateCircle();
+                    if(timeLeft <= 0) { 
+                        clearInterval(timerInterval); timerInterval = null;
+                        document.getElementById('notifSound').play();
+                        Swal.fire({ title: 'انتهى الوقت! 🎉', text: 'عاش يا بطل، خد راحة شوية ويرجع كمل', icon: 'success' });
+                        resetT();
+                    }
+                }, 1000); 
+                btn.innerText = "إيقاف";
+            }
+        }
+        function updateUI() { const m = Math.floor(timeLeft/60), s = timeLeft%60; document.getElementById('tDisplay').innerText = `${m}:${s < 10 ? '0'+s : s}`; }
+        function updateCircle() { 
+            const offset = circumference - ((totalTime - timeLeft) / totalTime) * circumference; 
+            if(circle) circle.style.strokeDashoffset = offset; 
+        }
+        function resetT() { clearInterval(timerInterval); timerInterval = null; timeLeft = totalTime; updateUI(); updateCircle(); document.getElementById('tBtn').innerText = "بدء"; }
+
+        // --- المهام ---
+        function loadT() {
+            document.getElementById('tList').innerHTML = tasks.map((t, i) => `
+                <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
+                    <span style="${t.done ? 'text-decoration:line-through' : ''}">${t.text}</span>
+                    <div>
+                        ${!t.done ? `<i class="fas fa-check-circle" onclick="confirmDone(${i})" style="color:var(--accent); cursor:pointer;"></i>` : ''}
+                        <i class="fas fa-trash" onclick="deleteTask(${i})" style="color:#ff4757; cursor:pointer; margin-right:10px;"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function confirmDone(i) {
+            Swal.fire({ title: 'خلصت المهمة؟ 🍉', text: "سيتم إضافة 10 نقاط لرصيدك الدائم", icon: 'question', showCancelButton: true, confirmButtonColor: '#2ed573', confirmButtonText: 'نعم، تم!', cancelButtonText: 'ليس بعد' }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('cheerSound').play();
+                    tasks[i].done = true; totalFinishedCount++;
+                    localStorage.setItem('totalFinishedCount', totalFinishedCount);
+                    saveT(); loadT();
+                }
+            });
+        }
+
+        function deleteTask(i) {
+            tasks.splice(i, 1); saveT(); loadT();
+        }
+
+        function addTask() {
+            const inp = document.getElementById('tInput'); if(!inp.value) return;
+            tasks.push({text: inp.value, done: false}); saveT(); inp.value = ""; loadT();
+        }
+        function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
+
+        // --- المواد والقرآن ---
+        function loadS() {
+            const user = getStudentData(); const year = String(user.year); const branch = (user.branch || "").trim(); const yearName = getYearName(year);
+            let subs = [];
+            if (year === "1") subs = ["عربي", "رياضة", "انجليزي", "علوم متكاملة", "فرنساوي", "تاريخ"];
+            else if (year === "2") {
+                if (branch.includes("علمي")) subs = ["عربي", "انجليزي", "رياضة", "كيمياء", "فيزياء"];
+                else subs = ["عربي", "انجليزي", "تاريخ", "فلسفة", "جغرافيا"];
+            } else if (year === "3") {
+                subs = branch.includes("علوم") ? ["أحياء", "كيمياء", "فيزياء"] : ["رياضيات", "كيمياء", "فيزياء"];
+            }
+            document.getElementById('sGrid').innerHTML = subs.map(s => `<div class="tool-card" onclick="window.open('https://www.youtube.com/results?search_query=شرح ${s} للصف ${yearName} الثانوي','_blank')"> <h4>${s}</h4> </div>`).join('');
+        }
+
+        async function loadQ() {
+            const list = document.getElementById('quranList'); if(list.innerHTML !== "") return;
+            try {
+                const res = await fetch('https://api.alquran.cloud/v1/surah'); const data = await res.json();
+                list.innerHTML = data.data.slice(0, 20).map(s => `<div class="task-item" onclick="playSurah(${s.number})"><span>${s.name}</span><i class="fas fa-play-circle" style="color:var(--accent)"></i></div>`).join('');
+            } catch(e) { list.innerHTML = "تعذر تحميل القائمة"; }
+        }
+
+        function playSurah(id) {
+            const bar = document.getElementById('playerBar'); const audio = document.getElementById('mainAudio');
+            audio.src = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${id}.mp3`;
+            bar.style.display = 'flex'; audio.play();
+        }
+        function stopAudio() { document.getElementById('mainAudio').pause(); document.getElementById('playerBar').style.display = 'none'; }
+
+        function loadNotifs() {
+            const undone = tasks.filter(t => !t.done);
+            document.getElementById('notifContent').innerHTML = undone.length > 0 ? 
+                undone.map(t => `<div class="task-item">${t.text}</div>`).join('') : "لا توجد تنبيهات";
+        }
+
+        function updateBadge() {
+            const count = tasks.filter(t => !t.done).length;
+            const b = document.getElementById('notifBadge');
+            if(b) { b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none'; }
+        }
+
+        function logout() {
+            Swal.fire({ title: 'خارج ليه؟ 🍉', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، خروج' }).then((r) => {
+                if (r.isConfirmed) { localStorage.removeItem('activeStudent'); window.location.href = 'index.html'; }
+            });
+        }
     </script>
 </body>
 </html>
