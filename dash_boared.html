@@ -14,16 +14,36 @@
         .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #161a26; position: sticky; top: 0; z-index: 1000; }
         .nav-icons { display: flex; gap: 12px; align-items: center; }
         .icon-circle { width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); position: relative; }
-        .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; }
+        .badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: 2px solid #161a26; z-index: 10; }
 
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
         .back-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--accent); cursor: pointer; font-weight: bold; }
         
         .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; }
-        .tool-card { background: var(--card-bg); padding: 25px; border-radius: 22px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+        .tool-card { background: var(--card-bg); padding: 25px; border-radius: 22px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; position: relative; }
         .tool-card i { font-size: 30px; color: var(--accent); margin-bottom: 12px; display: block; }
         .challenge-card { background: linear-gradient(45deg, #f093fb, #f5576c); grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 20px; }
+
+        .chat-dot {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background-color: #ff4757;
+            border-radius: 50%;
+            display: none;
+            border: 2px solid white;
+            box-shadow: 0 0 10px #ff4757;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+        }
 
         .advice-section { margin: 20px 10px; background: linear-gradient(135deg, #2c3e50, #000000); padding: 20px; border-radius: 25px; border: 1px solid rgba(46, 213, 115, 0.3); position: relative; overflow: hidden; }
         .advice-title { color: var(--accent); font-size: 14px; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
@@ -51,8 +71,6 @@
         .player-bar audio { flex: 1; height: 30px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .notif-warning { background: rgba(255, 71, 87, 0.1); color: #ff4757; padding: 15px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; border: 1px solid #ff4757; text-align: center;}
     </style>
 </head>
 <body>
@@ -71,7 +89,7 @@
     <div id="homePage" class="page active-page">
         <div class="tools-grid">
             <div class="tool-card challenge-card" onclick="window.location.href='Chel.html'">
-                <i class="fas fa-trophy" style="margin:0; color:white;"></i>
+                <div id="chatDot" class="chat-dot"></div> <i class="fas fa-trophy" style="margin:0; color:white;"></i>
                 <h3 style="margin:0;">تحدي الأصدقاء 🔥</h3>
             </div>
             <div class="tool-card" onclick="openPage('subjectsPage')"><i class="fas fa-play-circle"></i><h4>المواد</h4></div>
@@ -141,83 +159,71 @@
     </div>
 
     <script>
-        // --- الثوابت والبيانات ---
-        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3cnnVRVDXwloY-Fo8p7g1gYt3WNhA8pbwXAZOYmrTvnoCmm8jTywyZOB9riO1eOwy/exec";
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
-        let knownMsgs = {}; // لتتبع الرسائل السابقة ومنع التكرار
+        let knownMsgs = {}; 
 
-        const advices = ["ابدأ يومك بصلاة الفجر، بركة اليوم تبدأ من هناك.", "المذاكرة لمدة 25 دقيقة بتركيز أفضل من 4 ساعات تشتت.", "لا تؤجل عمل اليوم إلى الغد، البطيخة الشاطرة تنجز أولاً بأول.", "اجعل لنفسك ورداً يومياً من القرآن، فإنه ينير العقل.", "تذكر دائماً فرحة أهلك يوم النتيجة، تستحق التعب!"];
+        // 1. نظام الرسالة المنبثقة (Broadcast)
+        async function checkBroadcast() {
+            // نمنع الظهور المتكرر في نفس المرة التي يفتح فيها التطبيق
+            if (sessionStorage.getItem('broadcastShown')) return;
 
-        // --- نظام التنبيهات (Notification System) ---
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getBroadcast`);
+                const data = await res.json();
+                
+                if (data.message && data.message.trim() !== "") {
+                    Swal.fire({
+                        title: 'إعلان مهم 📢',
+                        text: data.message,
+                        icon: 'info',
+                        confirmButtonText: 'فهمت',
+                        confirmButtonColor: '#764ba2',
+                        background: '#1a1f2e',
+                        color: '#fff'
+                    });
+                    sessionStorage.setItem('broadcastShown', 'true');
+                }
+            } catch(e) { console.log("No broadcast found"); }
+        }
 
         async function checkGlobalNotifications() {
-            const user = JSON.parse(localStorage.getItem('appUser')); // بيانات تسجيل دخول الشات
+            const user = JSON.parse(localStorage.getItem('appUser'));
             if (!user || !user.phone) return;
 
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                 const data = await res.json();
-                
-                let hasNewMsg = false;
+                let hasUnread = false;
 
                 for (const friend of data.friends) {
                     const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${friend.phone}`);
                     const mData = await mRes.json();
-                    
                     const count = mData.messages.length;
-                    // إذا زاد عدد الرسائل عن آخر مرة سجلناها
                     if (knownMsgs[friend.phone] !== undefined && count > knownMsgs[friend.phone]) {
                         const last = mData.messages[count - 1];
                         if (String(last.sender) !== String(user.phone)) {
-                            hasNewMsg = true;
+                            hasUnread = true;
                             showToast(`رسالة من ${friend.name}`, last.text);
                             document.getElementById('notifSound').play();
                         }
                     }
                     knownMsgs[friend.phone] = count;
                 }
-                updateBadge(hasNewMsg); // تحديث الجرس
-            } catch(e) { console.log("خطأ في جلب التنبيهات"); }
+                const chatDot = document.getElementById('chatDot');
+                if (chatDot) chatDot.style.display = hasUnread ? 'block' : 'none';
+            } catch(e) {}
         }
 
         function showToast(title, text) {
             Swal.fire({
-                title: title,
-                text: text,
-                toast: true,
-                position: 'top-start',
-                showConfirmButton: false,
-                timer: 4000,
-                timerProgressBar: true,
-                background: '#1a1f2e',
-                color: '#fff',
-                icon: 'info',
-                didClick: () => { window.location.href = 'chel.html'; } // الانتقال للشات عند الضغط
+                title: title, text: text, toast: true, position: 'top-start',
+                showConfirmButton: false, timer: 4000, background: '#1a1f2e', color: '#fff', icon: 'info'
             });
         }
 
-        function updateBadge(newChat = false) {
-            const undoneTasks = tasks.filter(t => !t.done).length;
-            const b = document.getElementById('notifBadge');
-            
-            // يظهر الرقم إذا كان هناك مهام أو رسالة جديدة
-            const totalNotifs = undoneTasks;
-            b.innerText = totalNotifs;
-            
-            if (totalNotifs > 0 || newChat) {
-                b.style.display = 'flex';
-                if(newChat) b.style.background = "#2ed573"; // لون أخضر إذا كانت رسالة
-                else b.style.background = "#ff4757"; // لون أحمر للمهام
-            } else {
-                b.style.display = 'none';
-            }
-        }
-
-        // فحص دوري كل 15 ثانية
-        setInterval(checkGlobalNotifications, 15000);
-
-        // --- بقية وظائف المنصة الأساسية ---
+        const advices = ["ابدأ يومك بصلاة الفجر، بركة اليوم تبدأ من هناك.", "المذاكرة لمدة 25 دقيقة بتركيز أفضل من 4 ساعات تشتت.", "لا تؤجل عمل اليوم إلى الغد، البطيخة الشاطرة تنجز أولاً بأول.", "اجعل لنفسك ورداً يومياً من القرآن، فإنه ينير العقل.", "تذكر دائماً فرحة أهلك يوم النتيجة، تستحق التعب!"];
 
         function setDailyAdvice() {
             const date = new Date().toDateString();
@@ -248,7 +254,6 @@
         }
         function goHome() { openPage('homePage'); }
 
-        // العداد
         let timeLeft = 1500, totalTime = 1500, timerInterval = null;
         const circumference = 2 * Math.PI * 125;
         document.getElementById('progressCircle').style.strokeDasharray = circumference;
@@ -279,7 +284,6 @@
         function updateCircle() { const offset = circumference - ((totalTime - timeLeft) / totalTime) * circumference; document.getElementById('progressCircle').style.strokeDashoffset = offset; }
         function resetT() { clearInterval(timerInterval); timerInterval = null; timeLeft = totalTime; updateUI(); updateCircle(); document.getElementById('tBtn').innerText = "بدء"; }
 
-        // المهام
         function loadT() {
             document.getElementById('tList').innerHTML = tasks.map((t, i) => `
                 <div class="task-item" style="${t.done ? 'opacity:0.5' : ''}">
@@ -293,13 +297,32 @@
             updateBadge();
         }
 
+        // 2. إعادة رسالة التهنئة عند إنهاء المهمة
         function confirmDone(i) {
-            Swal.fire({ title: 'خلصت المهمة؟ 🍉', text: "سيتم إضافة 10 نقاط لرصيدك الدائم", icon: 'question', showCancelButton: true, confirmButtonColor: '#2ed573', confirmButtonText: 'نعم، تم بنجاح!' }).then((result) => {
+            Swal.fire({ 
+                title: 'خلصت المهمة؟ 🍉', 
+                text: "سيتم إضافة 10 نقاط لرصيدك الدائم", 
+                icon: 'question', 
+                showCancelButton: true, 
+                confirmButtonColor: '#2ed573', 
+                cancelButtonColor: '#ff4757',
+                confirmButtonText: 'نعم، تم بنجاح!',
+                cancelButtonText: 'ليس بعد'
+            }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('cheerSound').play();
-                    tasks[i].done = true; totalFinishedCount++;
+                    tasks[i].done = true; 
+                    totalFinishedCount++;
                     localStorage.setItem('totalFinishedCount', totalFinishedCount);
-                    saveT(); loadT();
+                    saveT(); 
+                    loadT();
+                    Swal.fire({
+                        title: 'أحسنت! 🥳',
+                        text: 'استمر في الإنجاز يا بطيخة شاطرة!',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             });
         }
@@ -311,7 +334,6 @@
         }
         function saveT() { localStorage.setItem('tasks', JSON.stringify(tasks)); updateBadge(); }
 
-        // المواد والقرآن
         function loadS() {
             const user = getStudentData(); const year = String(user.year); const branch = (user.branch || "").trim(); const yearName = getYearName(year);
             let subs = [];
@@ -344,18 +366,25 @@
                 `<p style="text-align:center; opacity:0.5; margin-top:20px;">كلو تمام يا بطيخة! مفيش مهام متأخرة</p>`;
         }
 
+        function updateBadge() {
+            const count = tasks.filter(t => !t.done).length;
+            const b = document.getElementById('notifBadge');
+            if (b) { b.innerText = count; b.style.display = count > 0 ? 'flex' : 'none'; }
+        }
+
         function logout() {
             localStorage.removeItem('activeStudent');
             window.location.href = 'index.html';
         }
 
         // تشغيل الوظائف عند التحميل
-        window.onload = () => {
-            setDailyAdvice();
-            updateBadge();
-            checkGlobalNotifications();
-            loadProfileData();
-        };
+        setDailyAdvice(); 
+        updateBadge(); 
+        updateCircle();
+        checkBroadcast(); // تشغيل فحص الرسالة المنبثقة
+        setInterval(checkGlobalNotifications, 15000);
+        checkGlobalNotifications();
     </script>
 </body>
 </html>
+
