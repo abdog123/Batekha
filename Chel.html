@@ -35,7 +35,6 @@
 
         input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
 
-        /* شات ثيم واتساب الجديد */
         #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); z-index: 1000; display: none; flex-direction: column; }
         .chat-header { padding: 12px 15px; background: #202c33; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 4px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: #0b141a; }
@@ -45,7 +44,7 @@
         .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 0; margin-right: 10px; }
         
         .msg-info { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; margin-top: 4px; opacity: 0.7; }
-        .status-tick { font-size: 12px; }
+        .status-tick { font-size: 12px; transition: 0.3s; }
         .status-tick.read { color: #53bdeb; }
 
         .chat-input-area { padding: 10px; display: flex; gap: 8px; background: #202c33; align-items: center; }
@@ -72,7 +71,7 @@
         <button class="main-btn" onclick="goToFriends()">
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
+        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -126,24 +125,29 @@
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
-                startGlobalNotifications(); // تشغيل فحص الرسائل العام
+                startGlobalNotifications();
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
         }
 
-        // فحص الرسائل في الخلفية (حتى لو الشات مقفول)
+        // إشعارات عالمية وفحص التنبيهات من صفحة الداشبورد أيضاً
         function startGlobalNotifications() {
             if (globalNotifyInterval) clearInterval(globalNotifyInterval);
             globalNotifyInterval = setInterval(async () => {
-                if (isChatOpen) return; // لا تظهر نوتفكيشن لو الشات مفتوح بالفعل
                 const user = JSON.parse(localStorage.getItem('appUser'));
+                if (!user) return;
                 try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+                    // نطلب حالة التنبيهات العامة (رسائل غير مقروءة)
+                    const res = await fetch(`${SCRIPT_URL}?action=getUnreadStatus&phone=${user.phone}`);
                     const data = await res.json();
-                    // هنا يمكن إضافة منطق لمقارنة عدد الرسائل الكلي وتنبيه المستخدم
+                    if (data.hasNew && !isChatOpen) {
+                        playTone();
+                        // تخزين في الكوكيز لتقرأها صفحة dash_board
+                        localStorage.setItem('chatBadge', data.count);
+                    }
                 } catch(e) {}
-            }, 10000); // فحص كل 10 ثواني
+            }, 8000);
         }
 
         function saveAndLock() {
@@ -172,7 +176,7 @@
                             <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
                             <b>${f.name}</b>
                         </div>
-                        <i class="fas fa-chevron-left" style="opacity:0.3;"></i>
+                        ${f.unread > 0 ? `<span style="background:red; padding:2px 8px; border-radius:10px; font-size:12px;">${f.unread}</span>` : '<i class="fas fa-chevron-left" style="opacity:0.3;"></i>'}
                     </div>
                 `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>';
 
@@ -188,15 +192,20 @@
             } catch(e) {}
         }
 
-        function openChat(name, phone) {
+        async function openChat(name, phone) {
             isChatOpen = true;
             window.currentChatPhone = phone;
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('chatFriendName').innerText = name;
-            document.getElementById('chatMsgs').innerHTML = '';
+            document.getElementById('chatMsgs').innerHTML = '<p style="text-align:center; opacity:0.5;">جاري تحميل المحادثة...</p>';
             lastMsgCount = 0;
+            
+            // إخبار السيرفر أنني قرأت الرسائل
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            fetch(`${SCRIPT_URL}?action=markRead&me=${user.phone}&friend=${phone}`);
+            
             loadMessages();
-            chatInterval = setInterval(loadMessages, 2000);
+            chatInterval = setInterval(loadMessages, 3000);
         }
 
         async function loadMessages() {
@@ -205,26 +214,31 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
-                if (data.messages.length > lastMsgCount) {
+                
+                // تحديث الحالة لـ "مقروء" إذا كان الطرف الآخر يرى الشات الآن
+                if (data.messages.length > 0) {
                     const container = document.getElementById('chatMsgs');
                     container.innerHTML = data.messages.map(m => {
                         const isMe = m.sender === user.phone;
-                        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        // منطق الصح والصحين
+                        let tickClass = "fas fa-check"; // صح واحد (أرسلت)
+                        if (m.status === "delivered") tickClass = "fas fa-check-double"; // صحين رمادي (وصلت)
+                        if (m.status === "read") tickClass = "fas fa-check-double read"; // صحين أزرق (شافها)
+
                         return `
                             <div class="msg ${isMe ? 'sent' : 'received'}">
                                 ${m.text}
                                 <div class="msg-info">
-                                    <span>${time}</span>
-                                    ${isMe ? '<i class="fas fa-check-double status-tick read"></i>' : ''}
+                                    <span>${m.time || 'الآن'}</span>
+                                    ${isMe ? `<i class="${tickClass} status-tick"></i>` : ''}
                                 </div>
                             </div>
                         `;
                     }).join('');
-                    container.scrollTop = container.scrollHeight;
-
-                    if (data.messages[data.messages.length - 1].sender !== user.phone && lastMsgCount > 0) {
-                        playTone();
-                        showNotification(document.getElementById('chatFriendName').innerText, data.messages[data.messages.length - 1].text);
+                    
+                    if (data.messages.length > lastMsgCount) {
+                        container.scrollTop = container.scrollHeight;
+                        if (!isMe && lastMsgCount > 0) playTone();
                     }
                     lastMsgCount = data.messages.length;
                 }
@@ -237,14 +251,12 @@
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
             
-            // إضافة فورية مع علامة الساعة
+            // إضافة فورية وهمية للسرعة
             const container = document.getElementById('chatMsgs');
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const tempId = 'temp_' + Date.now();
             container.innerHTML += `
-                <div class="msg sent" id="${tempId}">
+                <div class="msg sent">
                     ${text}
-                    <div class="msg-info"><span>${time}</span> <i class="fas fa-clock status-tick"></i></div>
+                    <div class="msg-info"><span>الآن</span> <i class="fas fa-clock status-tick"></i></div>
                 </div>
             `;
             container.scrollTop = container.scrollHeight;
@@ -252,34 +264,52 @@
 
             try {
                 await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                // تحديث علامة الساعة لصح عند النجاح
-                const tempMsg = document.getElementById(tempId);
-                if(tempMsg) tempMsg.querySelector('.status-tick').className = 'fas fa-check status-tick';
             } catch(e) {
-                const tempMsg = document.getElementById(tempId);
-                if(tempMsg) tempMsg.style.background = '#8b0000';
+                Swal.fire('خطأ', 'فشل إرسال الرسالة', 'error');
             }
         }
 
-        function showNotification(sender, text) {
-            if (Notification.permission === "granted") {
-                new Notification(sender, { body: text });
-            } else {
-                Swal.fire({ toast: true, position: 'top-end', title: sender, text: text, timer: 3000, showConfirmButton: false });
-            }
-        }
-
-        function playTone() { try { new Audio('https://www.soundjay.com/buttons/beep-07a.mp3').play(); } catch(e) {} }
+        function playTone() { try { new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play(); } catch(e) {} }
 
         function closeChat() {
             isChatOpen = false;
             document.getElementById('chatPage').style.display = 'none';
             clearInterval(chatInterval);
             window.currentChatPhone = null;
+            fetchFriendsData(); // لتحديث العدادات
         }
 
         function goToFriends() { showSection('friendsPage'); }
+        
+        // البحث عن صديق
+        async function searchFriend() {
+            const p = document.getElementById('friendPhone').value;
+            const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
+            const data = await res.json();
+            if(data.found) {
+                document.getElementById('searchResult').style.display = 'block';
+                document.getElementById('foundName').innerText = data.name;
+                window.searchedPhone = p;
+            } else {
+                Swal.fire('غير موجود', 'هذا الرقم غير مسجل في بطيختي', 'info');
+            }
+        }
+
+        async function sendFriendRequest() {
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
+            Swal.fire('تم', 'تم إرسال طلب الصداقة', 'success');
+            document.getElementById('searchResult').style.display = 'none';
+        }
+
+        async function respond(phone, act) {
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
+            fetchFriendsData();
+        }
+
         initApp();
     </script>
 </body>
 </html>
+
