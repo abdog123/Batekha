@@ -15,7 +15,6 @@
             overscroll-behavior-y: contain; overflow-x: hidden;
         }
 
-        /* تأثيرات حية للأزرار */
         .main-btn, button { transition: all 0.2s ease; cursor: pointer; border: none; outline: none; }
         .main-btn:active, button:active { transform: scale(0.95); opacity: 0.8; }
         .main-btn:hover { box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); }
@@ -29,7 +28,6 @@
 
         input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
 
-        /* ستايل الشات الاحترافي */
         #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 1000; display: none; flex-direction: column; }
         .chat-header { padding: 15px; background: #161a26; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-size: contain; }
@@ -106,7 +104,6 @@
     </div>
 
     <script>
-        // الرابط الجديد الخاص بك
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbwzlFyxJTsGDQd0AdsXI5efJyOe14_o6dSVo4rSclMyE8TBLYa8_cIfV3sJZhagAW6-/exec";
         let chatInterval = null;
 
@@ -114,13 +111,24 @@
             const user = JSON.parse(localStorage.getItem('appUser'));
             if (user && user.phone) {
                 document.getElementById('setupOverlay').style.display = 'none';
-                document.getElementById('mainMenu').style.display = 'block';
+                
+                // حفظ الصفحة الحالية عند الريفرش
+                const lastPage = localStorage.getItem('lastPage') || 'mainMenu';
+                showSection(lastPage);
+                if(lastPage === 'friendsPage') fetchFriendsData();
+
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
         }
         initApp();
+
+        function showSection(id) {
+            document.querySelectorAll('.sub-page').forEach(p => p.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            localStorage.setItem('lastPage', id); // حفظ الصفحة
+        }
 
         function saveAndLock() {
             const n = document.getElementById('setupName').value.trim();
@@ -166,22 +174,27 @@
 
         async function fetchFriendsData() {
             const user = JSON.parse(localStorage.getItem('appUser'));
-            const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
-            const data = await res.json();
-            
-            document.getElementById('friendsList').innerHTML = data.friends.map(f => `
-                <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; border-right: 4px solid var(--accent);">
-                    <span><i class="fas fa-user-circle"></i> ${f.name}</span>
-                    <i class="fas fa-comment-dots" style="color:var(--primary); font-size:20px;"></i>
-                </div>
-            `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء حالياً</p>';
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+                const data = await res.json();
+                
+                document.getElementById('friendsList').innerHTML = data.friends.map(f => `
+                    <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; border-right: 4px solid var(--accent);">
+                        <span><i class="fas fa-user-circle"></i> ${f.name}</span>
+                        <i class="fas fa-comment-dots" style="color:var(--primary); font-size:20px;"></i>
+                    </div>
+                `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء حالياً</p>';
 
-            document.getElementById('receivedList').innerHTML = data.received.map(r => `
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>${r.name} أرسل لك طلباً</span>
-                    <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:5px 15px; border-radius:8px; font-weight:bold;">قبول</button>
-                </div>
-            `).join('') || '<p style="text-align:center; opacity:0.5;">لا توجد طلبات جديدة</p>';
+                document.getElementById('receivedList').innerHTML = data.received.map(r => `
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>${r.name} أرسل لك طلباً</span>
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:5px 12px; border-radius:8px; font-weight:bold;">قبول</button>
+                            <button onclick="respond('${r.phone}', 'reject')" style="background:#ff4757; color:white; padding:5px 12px; border-radius:8px; font-weight:bold;">رفض</button>
+                        </div>
+                    </div>
+                `).join('') || '<p style="text-align:center; opacity:0.5;">لا توجد طلبات جديدة</p>';
+            } catch(e) {}
         }
 
         async function respond(target, status) {
@@ -190,19 +203,13 @@
             fetchFriendsData();
         }
 
-        // --- نظام المحادثة الحقيقي ---
         function openChat(name, phone) {
-            Swal.fire({
-                title: 'تنبيه الأدب 🍉',
-                text: `أنت تتحدث الآن مع ${name}. يرجى التحدث باحترام وتجنب الإساءة.`,
-                icon: 'info', confirmButtonText: 'موافق، ابدأ الشات'
-            }).then(() => {
-                document.getElementById('chatPage').style.display = 'flex';
-                document.getElementById('chatFriendName').innerText = name;
-                window.currentChatPhone = phone;
-                loadMessages();
-                chatInterval = setInterval(loadMessages, 3500); // تحديث تلقائي كل 3.5 ثانية
-            });
+            document.getElementById('chatPage').style.display = 'flex';
+            document.getElementById('chatFriendName').innerText = name;
+            window.currentChatPhone = phone;
+            loadMessages();
+            // تحديث فوري كل 0.5 ثانية
+            chatInterval = setInterval(loadMessages, 500); 
         }
 
         async function loadMessages() {
@@ -211,24 +218,34 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
                 const container = document.getElementById('chatMsgs');
-                container.innerHTML = data.messages.map(m => `
+                
+                // تحديث الشات فقط إذا تغير عدد الرسائل لمنع الرعشة في الواجهة
+                const currentMsgs = data.messages.map(m => `
                     <div class="msg ${m.sender === user.phone ? 'sent' : 'received'}">${m.text}</div>
                 `).join('');
-                container.scrollTop = container.scrollHeight;
+                
+                if (container.innerHTML !== currentMsgs) {
+                    container.innerHTML = currentMsgs;
+                    container.scrollTop = container.scrollHeight;
+                }
             } catch(e) {}
         }
 
         async function sendChatMessage() {
             const inp = document.getElementById('chatInput');
             const user = JSON.parse(localStorage.getItem('appUser'));
-            if(!inp.value.trim()) return;
+            const text = inp.value.trim();
+            if(!text) return;
 
-            const text = inp.value;
-            inp.value = ''; // مسح فوري لتحسين تجربة المستخدم
+            // إضافة الرسالة في واجهة الباعت فوراً (تجربة مستخدم سريعة)
+            const container = document.getElementById('chatMsgs');
+            container.innerHTML += `<div class="msg sent">${text}</div>`;
+            container.scrollTop = container.scrollHeight;
+            
+            inp.value = ''; 
             
             try {
                 await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                loadMessages();
             } catch(e) { Swal.fire('فشل', 'لم يتم إرسال الرسالة', 'error'); }
         }
 
@@ -237,12 +254,7 @@
             clearInterval(chatInterval);
         }
 
-        function showSection(id) {
-            document.querySelectorAll('.sub-page').forEach(p => p.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-        }
         function goToFriends() { showSection('friendsPage'); fetchFriendsData(); }
     </script>
 </body>
 </html>
-ارجع للكود القديم دا
