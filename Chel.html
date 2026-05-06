@@ -11,6 +11,7 @@
             --primary: #3498db; --dark: #0a0a0a; --accent: #2ed573; 
             --card: rgba(255,255,255,0.08); --wa-bg: #0b141a;
             --wa-sent: #005c4b; --wa-received: #202c33;
+            --danger: #ff4757;
         }
         
         body { 
@@ -19,8 +20,15 @@
             overscroll-behavior-y: contain; overflow-x: hidden;
         }
 
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); position: relative; }
         .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer;}
+        .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* النقطة الحمراء */
+        .notif-dot { 
+            position: absolute; top: 10px; left: 10px; width: 12px; height: 12px; 
+            background: var(--danger); border-radius: 50%; border: 2px solid #fff; display: none; z-index: 5;
+        }
         
         .sub-page { display: none; max-width: 500px; margin: auto; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -63,9 +71,10 @@
             <div id="welcomeUser" style="margin-top:10px; color:var(--accent); font-size:18px;"></div>
         </div>
         <button class="main-btn" onclick="showSection('friendsPage')">
+            <div id="mainMenuDot" class="notif-dot"></div>
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
+        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -84,7 +93,7 @@
             </div>
             <div id="searchResult" style="display:none; margin-top:15px; text-align:center;">
                 <p id="foundName" style="color:var(--accent); font-weight:bold;"></p>
-                <button onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
+                <button id="requestBtn" onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
             </div>
         </div>
 
@@ -108,12 +117,13 @@
     </div>
 
     <script>
-        // رابط السكريبت الخاص بك
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
         
         let chatInterval = null;
+        let globalSyncInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
+        let msgMemory = JSON.parse(localStorage.getItem('msgMemory')) || {};
 
         function initApp() {
             const user = JSON.parse(localStorage.getItem('appUser'));
@@ -121,9 +131,27 @@
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
+                startGlobalSync();
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
+        }
+
+        function startGlobalSync() {
+            if(globalSyncInterval) clearInterval(globalSyncInterval);
+            globalSyncInterval = setInterval(async () => {
+                const user = JSON.parse(localStorage.getItem('appUser'));
+                if(!user || isChatOpen) return;
+                try {
+                    const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+                    const data = await res.json();
+                    let hasNew = false;
+                    data.friends.forEach(f => {
+                        if(f.msgCount > (msgMemory[f.phone] || 0)) hasNew = true;
+                    });
+                    document.getElementById('mainMenuDot').style.display = hasNew ? 'block' : 'none';
+                } catch(e) {}
+            }, 3000);
         }
 
         function saveAndLock() {
@@ -149,15 +177,17 @@
                 
                 document.getElementById('friendsList').innerHTML = data.friends.map(f => `
                     <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; cursor:pointer;">
+                        <div id="dot-${f.phone}" class="notif-dot" style="${f.msgCount > (msgMemory[f.phone] || 0) ? 'display:block' : ''}"></div>
                         <b>${f.name}</b>
                         <i class="fas fa-chevron-left" style="opacity:0.3;"></i>
                     </div>
                 `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء بعد</p>';
 
                 document.getElementById('receivedList').innerHTML = data.received.map(r => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span><b>${r.name}</b></span>
-                        <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:5px 12px; border-radius:8px; border:none; cursor:pointer;">قبول</button>
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                        <span style="flex:1;"><b>${r.name}</b></span>
+                        <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">قبول</button>
+                        <button onclick="respond('${r.phone}', 'reject')" style="background:var(--danger); color:white; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">رفض</button>
                     </div>
                 `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات معلقة</p>';
             } catch(e) {}
@@ -171,8 +201,11 @@
             document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري تحميل المحادثة...</div>';
             lastMsgCount = 0;
             
+            const dot = document.getElementById(`dot-${phone}`);
+            if(dot) dot.style.display = 'none';
+
             loadMessages();
-            chatInterval = setInterval(loadMessages, 3000);
+            chatInterval = setInterval(loadMessages, 1000);
         }
 
         async function loadMessages() {
@@ -182,6 +215,9 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
                 
+                msgMemory[window.currentChatPhone] = data.messages.length;
+                localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
+
                 if (data.messages && data.messages.length > lastMsgCount) {
                     const container = document.getElementById('chatMsgs');
                     container.innerHTML = data.messages.map(m => {
@@ -212,7 +248,6 @@
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
             
-            // إضافة فورية مع علامة الساعة (وهمي مؤقتاً)
             const container = document.getElementById('chatMsgs');
             const tempDiv = document.createElement('div');
             tempDiv.className = 'msg sent';
@@ -222,9 +257,7 @@
             inp.value = '';
 
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                const result = await res.json();
-                // التحديث القادم من السيرفر سيحول الساعة لصح
+                await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
             } catch(e) {
                 tempDiv.style.background = "#8b0000";
             }
@@ -235,38 +268,58 @@
             document.getElementById('chatPage').style.display = 'none';
             clearInterval(chatInterval);
             window.currentChatPhone = null;
+            fetchFriendsData();
         }
 
         async function searchFriend() {
             const p = document.getElementById('friendPhone').value;
             if(!p) return;
             Swal.showLoading();
-            const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
-            const data = await res.json();
-            Swal.close();
-            if(data.found) {
-                document.getElementById('searchResult').style.display = 'block';
-                document.getElementById('foundName').innerText = data.name;
-                window.searchedPhone = p;
-            } else {
-                Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
-            }
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
+                const data = await res.json();
+                Swal.close();
+                if(data.found) {
+                    document.getElementById('searchResult').style.display = 'block';
+                    document.getElementById('foundName').innerText = data.name;
+                    window.searchedPhone = p;
+                } else {
+                    Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
+                }
+            } catch(e) { Swal.close(); }
         }
 
         async function sendFriendRequest() {
+            const btn = document.getElementById('requestBtn');
             const user = JSON.parse(localStorage.getItem('appUser'));
-            await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
-            Swal.fire('تم', 'تم إرسال طلب الصداقة', 'success');
-            document.getElementById('searchResult').style.display = 'none';
+            
+            btn.disabled = true;
+            btn.innerText = "جاري الإرسال...";
+            
+            try {
+                await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
+                Swal.fire('تم', 'تم إرسال طلب الصداقة', 'success');
+                document.getElementById('searchResult').style.display = 'none';
+            } catch(e) {
+                Swal.fire('خطأ', 'فشل الإرسال', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "إرسال طلب صداقة ➕";
+            }
         }
 
         async function respond(phone, act) {
             const user = JSON.parse(localStorage.getItem('appUser'));
-            await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
-            fetchFriendsData();
+            try {
+                await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
+                if(act === 'accept') Swal.fire('مبروك', 'تم قبول الصداقة', 'success');
+                else Swal.fire('تم', 'تم رفض الطلب', 'info');
+                fetchFriendsData();
+            } catch(e) {}
         }
 
         initApp();
     </script>
 </body>
 </html>
+
