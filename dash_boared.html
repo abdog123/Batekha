@@ -159,15 +159,16 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3cnnVRVDXwloY-Fo8p7g1gYt3WNhA8pbwXAZOYmrTvnoCmm8jTywyZOB9riO1eOwy/exec";
+        const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let totalFinishedCount = parseInt(localStorage.getItem('totalFinishedCount')) || 0;
         let knownMsgs = {}; 
 
-        // 1. نظام الرسالة المنبثقة (Broadcast)
+        // --- نظام الرسالة المنبثقة المحدث ---
         async function checkBroadcast() {
-            // نمنع الظهور المتكرر في نفس المرة التي يفتح فيها التطبيق
-            if (sessionStorage.getItem('broadcastShown')) return;
+            // التحقق من أن المستخدم مسجل دخول حالياً
+            const user = localStorage.getItem('activeStudent');
+            if (!user) return; 
 
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getBroadcast`);
@@ -183,7 +184,6 @@
                         background: '#1a1f2e',
                         color: '#fff'
                     });
-                    sessionStorage.setItem('broadcastShown', 'true');
                 }
             } catch(e) { console.log("No broadcast found"); }
         }
@@ -297,7 +297,6 @@
             updateBadge();
         }
 
-        // 2. إعادة رسالة التهنئة عند إنهاء المهمة
         function confirmDone(i) {
             Swal.fire({ 
                 title: 'خلصت المهمة؟ 🍉', 
@@ -381,7 +380,13 @@
         setDailyAdvice(); 
         updateBadge(); 
         updateCircle();
-        checkBroadcast(); // تشغيل فحص الرسالة المنبثقة
+
+        // فحص الرسالة عند الفتح (سواء أول مرة أو بعد تسجيل دخول جديد)
+        checkBroadcast(); 
+
+        // تكرار فحص الرسالة كل ساعة تلقائياً (3600000 مللي ثانية)
+        setInterval(checkBroadcast, 3600000);
+
         setInterval(checkGlobalNotifications, 15000);
         checkGlobalNotifications();
     </script>
