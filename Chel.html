@@ -23,7 +23,7 @@
             overscroll-behavior-y: contain; overflow-x: hidden;
         }
 
-        .main-btn, button { transition: all 0.2s ease; cursor: pointer; border: none; outline: none; }
+        .main-btn, button { transition: all 0.2s ease; cursor: pointer; border: none; outline: none; position: relative; }
         .main-btn:active, button:active { transform: scale(0.95); opacity: 0.8; }
 
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
@@ -35,24 +35,34 @@
 
         input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
 
-        /* الأصدقاء والنقطة الحمراء */
-        .friend-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; position: relative; }
-        .chat-trigger { position: relative; width: 45px; height: 45px; border-radius: 12px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.2rem; }
-        .unread-dot { position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: #ff4757; border-radius: 50%; border: 2px solid var(--dark); display: none; box-shadow: 0 0 10px #ff4757; }
+        /* التنبيهات (النقطة الحمراء) */
+        .red-dot {
+            position: absolute; top: -5px; right: -5px;
+            width: 12px; height: 12px; background: #ff4757;
+            border-radius: 50%; border: 2px solid white;
+            display: none; animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-        /* شات ثيم واتساب */
+        /* شات ثيم واتساب الجديد */
         #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); z-index: 1000; display: none; flex-direction: column; }
-        .chat-header { padding: 12px 15px; background: #202c33; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
+        .chat-header { padding: 12px 15px; background: #202c33; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 4px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: #0b141a; }
         
-        .msg { padding: 8px 12px; border-radius: 10px; max-width: 75%; font-size: 15px; color: #e9edef; line-height: 1.5; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
-        .msg.sent { background: var(--wa-sent); align-self: flex-start; border-top-right-radius: 0; }
-        .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 0; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 75%; font-size: 15px; position: relative; color: #e9edef; line-height: 1.5; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); }
+        .msg.sent { background: var(--wa-sent); align-self: flex-start; border-top-right-radius: 0; margin-left: 10px; }
+        .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 0; margin-right: 10px; }
         
         .msg-info { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; margin-top: 4px; opacity: 0.7; }
         .chat-input-area { padding: 10px; display: flex; gap: 8px; background: #202c33; align-items: center; }
         #chatInput { background: #2a3942; border: none; margin: 0; flex: 1; border-radius: 25px; padding: 12px 20px; }
-        .send-btn { background: #00a884; width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; }
+        .send-btn { background: #00a884; width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        
+        .chat-icon-btn {
+            background: rgba(255,255,255,0.1); width: 45px; height: 45px;
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -62,7 +72,7 @@
             <h2 style="color:var(--primary);">مرحباً بك في الساحة 🤝</h2>
             <input type="text" id="setupName" placeholder="الاسم الكامل">
             <input type="tel" id="setupPhone" placeholder="رقم الهاتف">
-            <button onclick="saveAndLock()" class="main-btn">دخول ✅</button>
+            <button id="setupBtn" onclick="saveAndLock()" class="main-btn">دخول ✅</button>
         </div>
     </div>
 
@@ -72,9 +82,10 @@
             <div id="welcomeUser" style="margin-top:10px; color:var(--accent); font-size:18px;"></div>
         </div>
         <button class="main-btn" onclick="goToFriends()">
+            <div class="red-dot" id="mainMenuDot"></div>
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
+        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -88,11 +99,11 @@
             <h4><i class="fas fa-search"></i> ابحث عن صديق</h4>
             <div style="display:flex; gap:8px;">
                 <input type="tel" id="friendPhone" placeholder="رقم الهاتف" style="margin:0;">
-                <button onclick="searchFriend()" style="background:var(--primary); padding:0 15px; border-radius:12px;"><i class="fas fa-search"></i></button>
+                <button onclick="searchFriend()" id="searchBtn" style="background:var(--primary); padding:0 15px; border-radius:12px;"><i class="fas fa-search"></i></button>
             </div>
             <div id="searchResult" style="display:none; margin-top:15px; text-align:center;">
                 <p id="foundName" style="color:var(--accent); font-weight:bold;"></p>
-                <button onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
+                <button id="sendReqBtn" onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
             </div>
         </div>
         <h4 style="color:var(--primary);">طلبات الصداقة</h4>
@@ -104,62 +115,74 @@
     <div id="chatPage">
         <div class="chat-header">
             <i class="fas fa-arrow-right" onclick="closeChat()" style="cursor:pointer; font-size:20px;"></i>
+            <div style="width:35px; height:35px; border-radius:50%; background:#6a7175; display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
             <span id="chatFriendName" style="font-weight:bold; font-size:17px; flex:1;">الاسم</span>
         </div>
         <div class="chat-messages" id="chatMsgs"></div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="اكتب رسالة..." autocomplete="off">
-            <button onclick="sendChatMessage()" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+            <button onclick="sendChatMessage()" class="send-btn" id="sendChatBtn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbwzlFyxJTsGDQd0AdsXI5efJyOe14_o6dSVo4rSclMyE8TBLYa8_cIfV3sJZhagAW6-/exec";
         let chatInterval = null;
-        let friendsCheckInterval = null;
+        let globalNotifyInterval = null;
+        let lastMsgCount = 0;
         let isChatOpen = false;
         let messageCounts = JSON.parse(localStorage.getItem('messageCounts')) || {};
 
         function initApp() {
+            if ("Notification" in window) Notification.requestPermission();
             const user = JSON.parse(localStorage.getItem('appUser'));
             if (user && user.phone) {
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
-                startFriendsMonitor();
+                startGlobalNotifications();
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
         }
 
-        // مراقبة الرسائل الجديدة لتشغيل النقطة الحمراء
-        function startFriendsMonitor() {
-            if (friendsCheckInterval) clearInterval(friendsCheckInterval);
-            friendsCheckInterval = setInterval(() => {
-                if (!isChatOpen && document.getElementById('friendsPage').style.display === 'block') {
-                    checkUnreadMessages();
-                }
-            }, 1000);
+        // فحص مستمر للرسائل الجديدة لتشغيل النقطة الحمراء
+        function startGlobalNotifications() {
+            if (globalNotifyInterval) clearInterval(globalNotifyInterval);
+            globalNotifyInterval = setInterval(async () => {
+                const user = JSON.parse(localStorage.getItem('appUser'));
+                if (!user) return;
+                
+                try {
+                    const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+                    const data = await res.json();
+                    let hasAnyUnread = false;
+
+                    for (let f of data.friends) {
+                        const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${f.phone}`);
+                        const mData = await mRes.json();
+                        const lastKnown = messageCounts[f.phone] || 0;
+                        
+                        const dot = document.getElementById(`dot-${f.phone}`);
+                        if (mData.messages.length > lastKnown) {
+                            hasAnyUnread = true;
+                            if (dot) dot.style.display = 'block';
+                        } else {
+                            if (dot) dot.style.display = 'none';
+                        }
+                    }
+                    // تحديث نقطة القائمة الرئيسية
+                    document.getElementById('mainMenuDot').style.display = hasAnyUnread ? 'block' : 'none';
+                } catch(e) {}
+            }, 1000); // تحديث كل ثانية
         }
 
-        async function checkUnreadMessages() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
-            const data = await res.json();
-            
-            for (let f of data.friends) {
-                const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${f.phone}`);
-                const mData = await mRes.json();
-                const dot = document.getElementById(`dot-${f.phone}`);
-                if (dot) {
-                    const lastKnown = messageCounts[f.phone] || 0;
-                    if (mData.messages.length > lastKnown) {
-                        dot.style.display = 'block';
-                    } else {
-                        dot.style.display = 'none';
-                    }
-                }
-            }
+        function saveAndLock() {
+            const n = document.getElementById('setupName').value.trim();
+            const p = document.getElementById('setupPhone').value.trim();
+            if(n.length < 3 || p.length < 10) return Swal.fire('خطأ', 'بيانات غير صحيحة', 'error');
+            localStorage.setItem('appUser', JSON.stringify({ name: n, phone: p }));
+            initApp();
         }
 
         function showSection(id) {
@@ -174,15 +197,14 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                 const data = await res.json();
-                
                 document.getElementById('friendsList').innerHTML = data.friends.map(f => `
-                    <div class="card friend-card">
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
                             <b>${f.name}</b>
                         </div>
-                        <div class="chat-trigger" onclick="openChat('${f.name}', '${f.phone}')">
-                            <div class="unread-dot" id="dot-${f.phone}"></div>
+                        <div class="chat-icon-btn" onclick="openChat('${f.name}', '${f.phone}')">
+                            <div class="red-dot" id="dot-${f.phone}"></div>
                             <i class="fas fa-comment-dots"></i>
                         </div>
                     </div>
@@ -197,8 +219,6 @@
                         </div>
                     </div>
                 `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات</p>';
-                
-                checkUnreadMessages(); // فحص فوري عند التحميل
             } catch(e) {}
         }
 
@@ -208,13 +228,9 @@
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('chatFriendName').innerText = name;
             document.getElementById('chatMsgs').innerHTML = '';
-            
-            // إخفاء النقطة الحمراء عند فتح الشات وتحديث العدد المعروف
-            const dot = document.getElementById(`dot-${phone}`);
-            if (dot) dot.style.display = 'none';
-
+            lastMsgCount = 0;
             loadMessages();
-            chatInterval = setInterval(loadMessages, 500);
+            chatInterval = setInterval(loadMessages, 1000);
         }
 
         async function loadMessages() {
@@ -224,21 +240,32 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
                 
-                // تحديث عدد الرسائل المقروءة لهذا الشخص
+                // تحديث الذاكرة المحلية لعدد الرسائل (تعتبر مقروءة عند الفتح)
                 messageCounts[window.currentChatPhone] = data.messages.length;
                 localStorage.setItem('messageCounts', JSON.stringify(messageCounts));
 
-                const container = document.getElementById('chatMsgs');
-                container.innerHTML = data.messages.map(m => {
-                    const isMe = m.sender === user.phone;
-                    return `
-                        <div class="msg ${isMe ? 'sent' : 'received'}">
-                            ${m.text}
-                            <div class="msg-info"><span>${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>
-                        </div>
-                    `;
-                }).join('');
-                container.scrollTop = container.scrollHeight;
+                if (data.messages.length > lastMsgCount) {
+                    const container = document.getElementById('chatMsgs');
+                    container.innerHTML = data.messages.map(m => {
+                        const isMe = m.sender === user.phone;
+                        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        return `
+                            <div class="msg ${isMe ? 'sent' : 'received'}">
+                                ${m.text}
+                                <div class="msg-info">
+                                    <span>${time}</span>
+                                    ${isMe ? '<i class="fas fa-check-double status-tick read"></i>' : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    container.scrollTop = container.scrollHeight;
+
+                    if (data.messages[data.messages.length - 1].sender !== user.phone && lastMsgCount > 0) {
+                        playTone();
+                    }
+                    lastMsgCount = data.messages.length;
+                }
             } catch(e) {}
         }
 
@@ -247,27 +274,36 @@
             const text = inp.value.trim();
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
+            
+            const container = document.getElementById('chatMsgs');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const tempId = 'temp_' + Date.now();
+            container.innerHTML += `
+                <div class="msg sent" id="${tempId}">
+                    ${text}
+                    <div class="msg-info"><span>${time}</span> <i class="fas fa-clock status-tick"></i></div>
+                </div>
+            `;
+            container.scrollTop = container.scrollHeight;
             inp.value = '';
+
             try {
                 await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                loadMessages();
-            } catch(e) {}
+                const tempMsg = document.getElementById(tempId);
+                if(tempMsg) tempMsg.querySelector('.status-tick').className = 'fas fa-check status-tick';
+            } catch(e) {
+                const tempMsg = document.getElementById(tempId);
+                if(tempMsg) tempMsg.style.background = '#8b0000';
+            }
         }
+
+        function playTone() { try { new Audio('https://www.soundjay.com/buttons/beep-07a.mp3').play(); } catch(e) {} }
 
         function closeChat() {
             isChatOpen = false;
             document.getElementById('chatPage').style.display = 'none';
             clearInterval(chatInterval);
             window.currentChatPhone = null;
-            fetchFriendsData(); // تحديث القائمة عند الرجوع
-        }
-
-        function saveAndLock() {
-            const n = document.getElementById('setupName').value.trim();
-            const p = document.getElementById('setupPhone').value.trim();
-            if(n.length < 3 || p.length < 10) return Swal.fire('خطأ', 'بيانات غير صحيحة', 'error');
-            localStorage.setItem('appUser', JSON.stringify({ name: n, phone: p }));
-            initApp();
         }
 
         function goToFriends() { showSection('friendsPage'); }
