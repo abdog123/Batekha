@@ -121,7 +121,7 @@
         let notifyInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
-        let knownMessagesCount = {}; // لتتبع عدد الرسائل لكل صديق للتنبيهات
+        let knownMessagesCount = {}; 
 
         function initApp() {
             const user = JSON.parse(localStorage.getItem('appUser'));
@@ -135,11 +135,10 @@
             }
         }
 
-        // نظام التنبيهات العام (يعمل في الخلفية)
         function startGlobalNotificationCheck() {
             if (notifyInterval) clearInterval(notifyInterval);
             notifyInterval = setInterval(async () => {
-                if (isChatOpen) return; // لا تظهر تنبيهات إذا كان الشات مفتوحاً بالفعل
+                if (isChatOpen) return;
                 
                 const user = JSON.parse(localStorage.getItem('appUser'));
                 try {
@@ -163,7 +162,7 @@
                         knownMessagesCount[friend.phone] = currentCount;
                     }
                 } catch(e) {}
-            }, 10000); // فحص كل 10 ثواني
+            }, 10000);
         }
 
         function showNotification(sender, text) {
@@ -210,12 +209,34 @@
                 `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء بعد</p>';
 
                 document.getElementById('receivedList').innerHTML = data.received.map(r => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;" id="row-${r.phone}">
                         <span><b>${r.name}</b></span>
-                        <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:5px 12px; border-radius:8px; border:none; cursor:pointer;">قبول</button>
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="respond('${r.phone}', 'accept', this)" style="background:var(--accent); color:black; padding:5px 12px; border-radius:8px; border:none; cursor:pointer;">قبول</button>
+                            <button onclick="respond('${r.phone}', 'reject', this)" style="background:#e74c3c; color:white; padding:5px 12px; border-radius:8px; border:none; cursor:pointer;">رفض</button>
+                        </div>
                     </div>
                 `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات معلقة</p>';
             } catch(e) {}
+        }
+
+        async function respond(phone, act, btn) {
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = act === 'accept' ? '<i class="fas fa-spinner fa-spin"></i> جاري القبول...' : '<i class="fas fa-spinner fa-spin"></i> جاري الرفض...';
+            
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
+                const result = await res.json();
+                if(result.status === "success") {
+                    fetchFriendsData();
+                } else { throw new Error(); }
+            } catch(e) {
+                Swal.fire('خطأ', 'فشلت العملية', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
         }
 
         async function openChat(name, phone) {
@@ -225,7 +246,6 @@
             document.getElementById('chatFriendName').innerText = name;
             document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري تحميل المحادثة...</div>';
             lastMsgCount = 0;
-            
             loadMessages();
             chatInterval = setInterval(loadMessages, 3000);
         }
@@ -236,7 +256,6 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
-                
                 if (data.messages && data.messages.length > lastMsgCount) {
                     const container = document.getElementById('chatMsgs');
                     container.innerHTML = data.messages.map(m => {
@@ -248,13 +267,11 @@
                                     <span>${m.time || ''}</span>
                                     ${isMe ? '<i class="fas fa-check status-tick"></i>' : ''}
                                 </div>
-                            </div>
-                        `;
+                            </div>`;
                     }).join('');
                     container.scrollTop = container.scrollHeight;
                     lastMsgCount = data.messages.length;
                     knownMessagesCount[window.currentChatPhone] = lastMsgCount;
-                    
                     if (data.messages[data.messages.length-1].sender !== user.phone && lastMsgCount !== 0) {
                         playTone();
                     }
@@ -267,7 +284,6 @@
             const text = inp.value.trim();
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
-            
             const container = document.getElementById('chatMsgs');
             const tempDiv = document.createElement('div');
             tempDiv.className = 'msg sent';
@@ -275,12 +291,9 @@
             container.appendChild(tempDiv);
             container.scrollTop = container.scrollHeight;
             inp.value = '';
-
             try {
                 await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-            } catch(e) {
-                tempDiv.style.background = "#8b0000";
-            }
+            } catch(e) { tempDiv.style.background = "#8b0000"; }
         }
 
         function closeChat() {
@@ -301,36 +314,26 @@
                 document.getElementById('searchResult').style.display = 'block';
                 document.getElementById('foundName').innerText = data.name;
                 window.searchedPhone = p;
-                // إعادة الزر لوضعه الطبيعي عند بحث جديد
                 const btn = document.getElementById('sendRequestBtn');
                 btn.innerHTML = 'إرسال طلب صداقة ➕';
                 btn.disabled = false;
-            } else {
-                Swal.fire('غير موجود', 'هذا الرقم غير مسجل في الساحة', 'info');
-            }
+            } else { Swal.fire('غير موجود', 'هذا الرقم غير مسجل', 'info'); }
         }
 
         async function sendFriendRequest() {
             const btn = document.getElementById('sendRequestBtn');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
             btn.disabled = true;
-
             const user = JSON.parse(localStorage.getItem('appUser'));
             try {
                 await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
-                Swal.fire('تم', 'تم إرسال طلب الصداقة بنجاح', 'success');
+                Swal.fire('تم', 'تم إرسال الطلب', 'success');
                 document.getElementById('searchResult').style.display = 'none';
             } catch (e) {
-                Swal.fire('خطأ', 'فشل في إرسال الطلب', 'error');
+                Swal.fire('خطأ', 'فشل الإرسال', 'error');
                 btn.innerHTML = 'إرسال طلب صداقة ➕';
                 btn.disabled = false;
             }
-        }
-
-        async function respond(phone, act) {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
-            fetchFriendsData();
         }
 
         function playTone() {
@@ -341,4 +344,3 @@
     </script>
 </body>
 </html>
-
