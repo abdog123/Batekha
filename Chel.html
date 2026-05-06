@@ -24,7 +24,7 @@
         .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer; position: relative; margin-bottom: 10px;}
         .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* النقطة الحمراء المطورة */
+        /* النقطة الحمراء */
         .notif-dot { 
             position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; 
             background: var(--danger); border-radius: 50%; border: 2px solid #fff; 
@@ -90,7 +90,7 @@
         </div>
         
         <button class="main-btn" onclick="showSection('friendsPage')">
-            <div id="mainMenuDot" class="notif-dot" style="top: 10px; right: 10px;"></div>
+            <div id="mainMenuDot" class="notif-dot" style="top: 10px; left: 10px;"></div>
             <i class="fas fa-user-friends"></i> تحدي مع صديقك
         </button>
 
@@ -163,7 +163,7 @@
             }
         }
 
-        // تحديث النقطة الحمراء كل 0.5 ثانية (500ms)
+        // تحسين النقطة الحمراء (استخدام localStorage للمزامنة الفورية)
         function startGlobalSync() {
             if(globalSyncInterval) clearInterval(globalSyncInterval);
             globalSyncInterval = setInterval(async () => {
@@ -181,13 +181,15 @@
                         
                         if(count > savedCount) {
                             hasNewMsg = true;
-                            if(dot) dot.style.display = 'block';
+                            if(dot) {
+                                dot.style.display = 'block';
+                                dot.title = "رسالة جديدة";
+                            }
                         } else {
                             if(dot) dot.style.display = 'none';
                         }
                     });
                     
-                    // إظهار النقطة في القائمة الرئيسية لو فيه رسائل أو طلبات جديدة
                     const hasRequests = data.received && data.received.length > 0;
                     const mainMenuDot = document.getElementById('mainMenuDot');
                     if(mainMenuDot) {
@@ -215,6 +217,11 @@
         async function fetchFriendsData() {
             const user = JSON.parse(localStorage.getItem('appUser'));
             const syncIcon = document.getElementById('syncIcon');
+            
+            // تعديل 1: إظهار "جاري البحث" عند التحديث
+            document.getElementById('receivedList').innerHTML = '<div class="searching-text">جاري البحث عن طلبات...</div>';
+            document.getElementById('friendsList').innerHTML = '<div class="searching-text">جاري البحث عن أصدقاء...</div>';
+            
             if(syncIcon) syncIcon.classList.add('fa-spin');
             
             try {
@@ -231,7 +238,7 @@
                             <i class="fas fa-comment-dots" style="font-size:20px;"></i>
                         </div>
                     </div>
-                `}).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء بعد</p>';
+                `}).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء حالياً</p>';
 
                 document.getElementById('receivedList').innerHTML = data.received.map(r => `
                     <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
@@ -324,8 +331,15 @@
         }
 
         async function searchFriend() {
-            const p = document.getElementById('friendPhone').value;
+            const p = document.getElementById('friendPhone').value.trim();
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            
+            // تعديل 2: منع البحث عن النفس
             if(!p) return;
+            if(p === user.phone) {
+                return Swal.fire('مرحباً!', 'لا يمكنك البحث عن نفسك أو إضافة نفسك كصديق 😂', 'info');
+            }
+
             Swal.showLoading();
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
@@ -347,9 +361,17 @@
             btn.disabled = true;
             btn.innerText = "جاري الإرسال...";
             try {
-                await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
-                Swal.fire('تم', 'تم إرسال طلب الصداقة', 'success');
+                // تعديل 2: السيرفر سيعالج الصداقة التلقائية إذا كان هناك طلب متبادل
+                const res = await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
+                const result = await res.json();
+                
+                if(result.status === "auto_friend") {
+                    Swal.fire('صداقة تلقائية!', 'لقد أصبحتما أصدقاء بالفعل لأن الطرف الآخر أرسل لك طلباً أيضاً!', 'success');
+                } else {
+                    Swal.fire('تم', 'تم إرسال طلب الصداقة بنجاح', 'success');
+                }
                 document.getElementById('searchResult').style.display = 'none';
+                fetchFriendsData();
             } catch(e) {
                 Swal.fire('خطأ', 'فشل الإرسال', 'error');
             } finally {
@@ -381,3 +403,4 @@
     </script>
 </body>
 </html>
+
