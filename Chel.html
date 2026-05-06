@@ -35,14 +35,9 @@
 
         input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
 
-        /* التنبيهات (النقطة الحمراء) */
-        .red-dot {
-            position: absolute; top: -5px; right: -5px;
-            width: 12px; height: 12px; background: #ff4757;
-            border-radius: 50%; border: 2px solid white;
-            display: none; animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        /* ستايل النقطة الحمراء */
+        .notif-dot { position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #ff4757; border-radius: 50%; border: 2px solid #fff; display: none; }
+        .chat-btn { background: rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent); position: relative; }
 
         /* شات ثيم واتساب الجديد */
         #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); z-index: 1000; display: none; flex-direction: column; }
@@ -54,15 +49,12 @@
         .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 0; margin-right: 10px; }
         
         .msg-info { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; margin-top: 4px; opacity: 0.7; }
+        .status-tick { font-size: 12px; }
+        .status-tick.read { color: #53bdeb; }
+
         .chat-input-area { padding: 10px; display: flex; gap: 8px; background: #202c33; align-items: center; }
         #chatInput { background: #2a3942; border: none; margin: 0; flex: 1; border-radius: 25px; padding: 12px 20px; }
         .send-btn { background: #00a884; width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        
-        .chat-icon-btn {
-            background: rgba(255,255,255,0.1); width: 45px; height: 45px;
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            color: var(--accent); font-size: 20px;
-        }
     </style>
 </head>
 <body>
@@ -82,10 +74,10 @@
             <div id="welcomeUser" style="margin-top:10px; color:var(--accent); font-size:18px;"></div>
         </div>
         <button class="main-btn" onclick="goToFriends()">
-            <div class="red-dot" id="mainMenuDot"></div>
+            <div class="notif-dot" id="mainNotif"></div>
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
-        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
+        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
@@ -131,7 +123,7 @@
         let globalNotifyInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
-        let messageCounts = JSON.parse(localStorage.getItem('messageCounts')) || {};
+        let msgMemory = JSON.parse(localStorage.getItem('msgMemory')) || {};
 
         function initApp() {
             if ("Notification" in window) Notification.requestPermission();
@@ -140,41 +132,38 @@
                 document.getElementById('setupOverlay').style.display = 'none';
                 showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
-                startGlobalNotifications();
+                startGlobalNotifications(); 
             } else {
                 document.getElementById('setupOverlay').style.display = 'flex';
             }
         }
 
-        // فحص مستمر للرسائل الجديدة لتشغيل النقطة الحمراء
         function startGlobalNotifications() {
             if (globalNotifyInterval) clearInterval(globalNotifyInterval);
             globalNotifyInterval = setInterval(async () => {
                 const user = JSON.parse(localStorage.getItem('appUser'));
-                if (!user) return;
-                
+                if(!user) return;
                 try {
                     const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                     const data = await res.json();
-                    let hasAnyUnread = false;
+                    let hasTotalUnread = false;
 
-                    for (let f of data.friends) {
+                    for(let f of data.friends) {
                         const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${f.phone}`);
                         const mData = await mRes.json();
-                        const lastKnown = messageCounts[f.phone] || 0;
-                        
-                        const dot = document.getElementById(`dot-${f.phone}`);
-                        if (mData.messages.length > lastKnown) {
-                            hasAnyUnread = true;
-                            if (dot) dot.style.display = 'block';
+                        const currentCount = mData.messages.length;
+                        const savedCount = msgMemory[f.phone] || 0;
+
+                        if(currentCount > savedCount) {
+                            hasTotalUnread = true;
+                            if(document.getElementById(`dot-${f.phone}`)) document.getElementById(`dot-${f.phone}`).style.display = 'block';
                         } else {
-                            if (dot) dot.style.display = 'none';
+                            if(document.getElementById(`dot-${f.phone}`)) document.getElementById(`dot-${f.phone}`).style.display = 'none';
                         }
                     }
-                    // تحديث نقطة القائمة الرئيسية
-                    document.getElementById('mainMenuDot').style.display = hasAnyUnread ? 'block' : 'none';
+                    document.getElementById('mainNotif').style.display = hasTotalUnread ? 'block' : 'none';
                 } catch(e) {}
-            }, 1000); // تحديث كل ثانية
+            }, 1000); // تحديث كل 1 ثانية
         }
 
         function saveAndLock() {
@@ -203,8 +192,8 @@
                             <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
                             <b>${f.name}</b>
                         </div>
-                        <div class="chat-icon-btn" onclick="openChat('${f.name}', '${f.phone}')">
-                            <div class="red-dot" id="dot-${f.phone}"></div>
+                        <div class="chat-btn" onclick="openChat('${f.name}', '${f.phone}')">
+                            <div class="notif-dot" id="dot-${f.phone}"></div>
                             <i class="fas fa-comment-dots"></i>
                         </div>
                     </div>
@@ -230,7 +219,7 @@
             document.getElementById('chatMsgs').innerHTML = '';
             lastMsgCount = 0;
             loadMessages();
-            chatInterval = setInterval(loadMessages, 1000);
+            chatInterval = setInterval(loadMessages, 1000); // تحديث كل 1 ثانية
         }
 
         async function loadMessages() {
@@ -240,9 +229,9 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
                 
-                // تحديث الذاكرة المحلية لعدد الرسائل (تعتبر مقروءة عند الفتح)
-                messageCounts[window.currentChatPhone] = data.messages.length;
-                localStorage.setItem('messageCounts', JSON.stringify(messageCounts));
+                // تحديث الذاكرة عند فتح الشات
+                msgMemory[window.currentChatPhone] = data.messages.length;
+                localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
 
                 if (data.messages.length > lastMsgCount) {
                     const container = document.getElementById('chatMsgs');
@@ -263,6 +252,7 @@
 
                     if (data.messages[data.messages.length - 1].sender !== user.phone && lastMsgCount > 0) {
                         playTone();
+                        showNotification(document.getElementById('chatFriendName').innerText, data.messages[data.messages.length - 1].text);
                     }
                     lastMsgCount = data.messages.length;
                 }
@@ -294,6 +284,14 @@
             } catch(e) {
                 const tempMsg = document.getElementById(tempId);
                 if(tempMsg) tempMsg.style.background = '#8b0000';
+            }
+        }
+
+        function showNotification(sender, text) {
+            if (Notification.permission === "granted") {
+                new Notification(sender, { body: text });
+            } else {
+                Swal.fire({ toast: true, position: 'top-end', title: sender, text: text, timer: 3000, showConfirmButton: false });
             }
         }
 
