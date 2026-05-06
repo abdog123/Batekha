@@ -36,8 +36,12 @@
         input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #333; background: rgba(0,0,0,0.5); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; }
 
         /* ستايل النقطة الحمراء */
-        .notif-dot { position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #ff4757; border-radius: 50%; border: 2px solid #fff; display: none; }
-        .chat-btn { background: rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent); position: relative; }
+        .red-dot {
+            position: absolute; top: 5px; left: 5px;
+            width: 10px; height: 10px; background: #ff4757;
+            border-radius: 50%; border: 2px solid #fff;
+            display: none; /* مخفية افتراضياً */
+        }
 
         /* شات ثيم واتساب الجديد */
         #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); z-index: 1000; display: none; flex-direction: column; }
@@ -74,7 +78,7 @@
             <div id="welcomeUser" style="margin-top:10px; color:var(--accent); font-size:18px;"></div>
         </div>
         <button class="main-btn" onclick="goToFriends()">
-            <div class="notif-dot" id="mainNotif"></div>
+            <div id="mainMenuNotif" class="red-dot"></div>
             <i class="fas fa-user-friends"></i> قائمة الأصدقاء والطلبات
         </button>
         <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold;">
@@ -123,7 +127,8 @@
         let globalNotifyInterval = null;
         let lastMsgCount = 0;
         let isChatOpen = false;
-        let msgMemory = JSON.parse(localStorage.getItem('msgMemory')) || {};
+        // مخزن لعدد الرسائل لكل صديق لمعرفة هل يوجد جديد أم لا
+        let msgCounts = JSON.parse(localStorage.getItem('msgCounts')) || {};
 
         function initApp() {
             if ("Notification" in window) Notification.requestPermission();
@@ -138,30 +143,34 @@
             }
         }
 
+        // فحص الرسائل وتحديث الإشعارات كل 1 ثانية
         function startGlobalNotifications() {
             if (globalNotifyInterval) clearInterval(globalNotifyInterval);
             globalNotifyInterval = setInterval(async () => {
                 const user = JSON.parse(localStorage.getItem('appUser'));
-                if(!user) return;
+                if (!user) return;
+                
                 try {
                     const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                     const data = await res.json();
-                    let hasTotalUnread = false;
+                    let hasUnread = false;
 
-                    for(let f of data.friends) {
-                        const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${f.phone}`);
+                    for (let friend of data.friends) {
+                        const mRes = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${friend.phone}`);
                         const mData = await mRes.json();
-                        const currentCount = mData.messages.length;
-                        const savedCount = msgMemory[f.phone] || 0;
-
-                        if(currentCount > savedCount) {
-                            hasTotalUnread = true;
-                            if(document.getElementById(`dot-${f.phone}`)) document.getElementById(`dot-${f.phone}`).style.display = 'block';
-                        } else {
-                            if(document.getElementById(`dot-${f.phone}`)) document.getElementById(`dot-${f.phone}`).style.display = 'none';
+                        
+                        // إذا كان العدد في السيرفر أكبر من المخزن عندنا، يعني في رسالة جديدة
+                        if (mData.messages.length > (msgCounts[friend.phone] || 0)) {
+                            if (!isChatOpen || window.currentChatPhone !== friend.phone) {
+                                hasUnread = true;
+                                if (document.getElementById(`dot-${friend.phone}`)) {
+                                    document.getElementById(`dot-${friend.phone}`).style.display = 'block';
+                                }
+                            }
                         }
                     }
-                    document.getElementById('mainNotif').style.display = hasTotalUnread ? 'block' : 'none';
+                    // تحديث النقطة في القائمة الرئيسية
+                    document.getElementById('mainMenuNotif').style.display = hasUnread ? 'block' : 'none';
                 } catch(e) {}
             }, 1000); // تحديث كل 1 ثانية
         }
@@ -187,15 +196,13 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                 const data = await res.json();
                 document.getElementById('friendsList').innerHTML = data.friends.map(f => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
+                    <div class="card" onclick="openChat('${f.name}', '${f.phone}')" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; position:relative;">
+                        <div id="dot-${f.phone}" class="red-dot"></div>
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
                             <b>${f.name}</b>
                         </div>
-                        <div class="chat-btn" onclick="openChat('${f.name}', '${f.phone}')">
-                            <div class="notif-dot" id="dot-${f.phone}"></div>
-                            <i class="fas fa-comment-dots"></i>
-                        </div>
+                        <i class="fas fa-chevron-left" style="opacity:0.3;"></i>
                     </div>
                 `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>';
 
@@ -218,8 +225,14 @@
             document.getElementById('chatFriendName').innerText = name;
             document.getElementById('chatMsgs').innerHTML = '';
             lastMsgCount = 0;
+            
+            // إخفاء النقطة عند فتح الشات
+            if (document.getElementById(`dot-${phone}`)) {
+                document.getElementById(`dot-${phone}`).style.display = 'none';
+            }
+
             loadMessages();
-            chatInterval = setInterval(loadMessages, 1000); // تحديث كل 1 ثانية
+            chatInterval = setInterval(loadMessages, 1000); // تحديث الشات كل 1 ثانية
         }
 
         async function loadMessages() {
@@ -229,9 +242,9 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
                 const data = await res.json();
                 
-                // تحديث الذاكرة عند فتح الشات
-                msgMemory[window.currentChatPhone] = data.messages.length;
-                localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
+                // تحديث الذاكرة المحلية بعدد الرسائل الحالي
+                msgCounts[window.currentChatPhone] = data.messages.length;
+                localStorage.setItem('msgCounts', JSON.stringify(msgCounts));
 
                 if (data.messages.length > lastMsgCount) {
                     const container = document.getElementById('chatMsgs');
