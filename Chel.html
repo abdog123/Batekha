@@ -17,15 +17,14 @@
         body { 
             background: radial-gradient(circle at top, #1e293b, #0f172a); 
             color: #f8fafc; margin: 0; padding: 15px; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            text-align: right; overscroll-behavior-y: contain; overflow-x: hidden;
-            min-height: 100vh;
+            font-family: 'Segoe UI', Roboto, sans-serif; text-align: right;
+            overscroll-behavior-y: contain; overflow-x: hidden; min-height: 100vh;
         }
 
         .card { 
             background: var(--card); padding: 20px; border-radius: 24px; 
             margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); 
-            backdrop-filter: blur(16px); position: relative;
+            backdrop-filter: blur(15px); position: relative;
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
         }
 
@@ -34,24 +33,21 @@
             padding: 16px; border-radius: 18px; color: white; width: 100%; 
             font-weight: 700; display: flex; align-items: center; justify-content: center; 
             gap: 12px; border:none; cursor:pointer; position: relative; 
-            margin-bottom: 12px; transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            margin-bottom: 12px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .main-btn:active { transform: scale(0.98); }
-        .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .main-btn:active { transform: scale(0.97); }
 
-        /* النقطة الحمراء المطورة */
+        /* النقطة الحمراء الذكية */
         .notif-dot { 
-            position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; 
+            position: absolute; top: -5px; right: -5px; width: 14px; height: 14px; 
             background: var(--danger); border-radius: 50%; border: 2px solid #fff; 
-            display: none; z-index: 10;
-            box-shadow: 0 0 10px var(--danger);
-            animation: pulse-dot 1.5s infinite;
+            display: none; z-index: 20; box-shadow: 0 0 12px var(--danger);
+            animation: pulse-dot 1.2s infinite;
         }
         @keyframes pulse-dot {
-            0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(255, 71, 87, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
         }
         
         .chat-icon-btn {
@@ -62,44 +58,37 @@
         }
         .chat-icon-btn:hover { background: var(--primary); color: white; }
 
-        .sub-page { display: none; max-width: 500px; margin: auto; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .sub-page { display: none; max-width: 500px; margin: auto; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         input { 
-            width: 100%; padding: 15px; border-radius: 16px; 
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); 
-            color: white; margin-bottom: 15px; outline: none; box-sizing: border-box;
-            transition: 0.3s;
+            width: 100%; padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(0,0,0,0.3); color: white; margin-bottom: 15px; outline: none; box-sizing: border-box; 
         }
-        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.4); }
 
         #chatPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); z-index: 1000; display: none; flex-direction: column; }
         .chat-header { padding: 15px; background: #202c33; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 8px; }
         
-        .msg { padding: 10px 15px; border-radius: 16px; max-width: 80%; font-size: 15px; position: relative; color: #e9edef; line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .msg { padding: 10px 15px; border-radius: 16px; max-width: 78%; font-size: 15px; position: relative; color: #e9edef; line-height: 1.4; }
         .msg.sent { background: var(--wa-sent); align-self: flex-start; border-top-right-radius: 4px; }
         .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 4px; }
         
         .msg-info { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-size: 10px; margin-top: 5px; opacity: 0.6; }
+        .refresh-btn { background: var(--accent); color: #003322; padding: 10px 18px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-        .chat-input-area { padding: 12px; display: flex; gap: 10px; background: #202c33; align-items: center; }
-        #chatInput { background: #2a3942; border: none; margin: 0; flex: 1; border-radius: 30px; padding: 12px 20px; }
-        .send-btn { background: #00a884; width: 48px; height: 48px; border-radius: 50%; color: white; border: none; font-size: 20px; cursor: pointer; }
-
-        .searching-text { text-align: center; color: var(--primary); font-size: 14px; padding: 20px; }
-        .refresh-btn { background: var(--accent); color: #003322; padding: 10px 18px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
-        .refresh-btn:hover { filter: brightness(1.1); }
+        .searching-text { text-align: center; color: var(--primary); font-size: 14px; padding: 20px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="setupOverlay" style="display:none; position:fixed; inset:0; background:var(--dark); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
         <div class="card" style="width:100%; max-width:350px; text-align:center;">
-            <h2 style="color:var(--primary); margin-bottom: 25px;">ساحة الأصدقاء 🤝</h2>
+            <h2 style="color:var(--primary);">ساحة الأصدقاء 🤝</h2>
             <input type="text" id="setupName" placeholder="الاسم الكامل">
-            <input type="tel" id="setupPhone" placeholder="رقم الهاتف">
-            <button onclick="saveAndLock()" class="main-btn">ابدأ الآن 🚀</button>
+            <input type="tel" id="setupPhone" placeholder="رقم الهاتف (01...)">
+            <button onclick="saveAndLock()" class="main-btn">دخول ✅</button>
         </div>
     </div>
 
@@ -110,16 +99,16 @@
         </div>
         
         <button class="main-btn" onclick="showSection('friendsPage')">
-            <div id="mainMenuDot" class="notif-dot"></div>
+            <div id="mainMenuDot" class="notif-dot" style="top: 10px; left: 10px;"></div>
             <i class="fas fa-user-friends"></i> تحدي مع صديقك
         </button>
 
-        <button class="main-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);" onclick="Swal.fire('قريباً', 'تحديات الذكاء الاصطناعي قادمة!', 'info')">
-            <i class="fas fa-robot"></i> تحدي نفسك (لو معكش صديق علي المنصه)
+        <button class="main-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);" onclick="Swal.fire('قريباً', 'سيتم إضافة تحديات الذكاء الاصطناعي قريباً!', 'info')">
+            <i class="fas fa-trophy"></i> تحدي نفسك (معكش صديق على المنصة)
         </button>
 
         <button onclick="window.location.href='dash_boared.html'" style="background:var(--glass); border:1px solid rgba(255,255,255,0.1); color:#94a3b8; margin-top:30px; width:100%; padding:15px; border-radius:18px; font-weight:bold; cursor:pointer;">
-            <i class="fas fa-home"></i> العودة للمنصة
+            <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
     </div>
 
@@ -132,21 +121,21 @@
         </div>
         
         <div class="card">
-            <h4 style="margin-top:0;"><i class="fas fa-search"></i> إضافة صديق جديد</h4>
+            <h4><i class="fas fa-search"></i> ابحث عن صديق</h4>
             <div style="display:flex; gap:10px;">
-                <input type="tel" id="friendPhone" placeholder="أدخل رقم الهاتف" style="margin:0;">
+                <input type="tel" id="friendPhone" placeholder="01xxxxxxxxx" style="margin:0;">
                 <button onclick="searchFriend()" style="background:var(--primary); width:55px; border-radius:14px; border:none; color:white;"><i class="fas fa-search"></i></button>
             </div>
-            <div id="searchResult" style="display:none; margin-top:20px; border-top: 1px solid var(--glass); padding-top: 15px;">
+            <div id="searchResult" style="display:none; margin-top:20px; text-align:center; border-top: 1px solid var(--glass); padding-top: 15px;">
                 <p id="foundName" style="color:var(--accent); font-weight:bold; font-size: 18px;"></p>
                 <button id="requestBtn" onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
             </div>
         </div>
 
-        <h4 style="color:var(--primary); margin-right: 5px;"><i class="fas fa-clock"></i> طلبات معلقة</h4>
-        <div id="receivedList"><div class="searching-text">جاري التحميل...</div></div>
+        <h4 style="color:var(--primary);"><i class="fas fa-clock"></i> طلبات معلقة</h4>
+        <div id="receivedList"><div class="searching-text">جاري البحث...</div></div>
 
-        <h4 style="color:var(--accent); margin-right: 5px;"><i class="fas fa-check-circle"></i> الأصدقاء</h4>
+        <h4 style="color:var(--accent);"><i class="fas fa-check-circle"></i> أصدقائي</h4>
         <div id="friendsList"><div class="searching-text">جاري التحميل...</div></div>
     </div>
 
@@ -183,7 +172,7 @@
             }
         }
 
-        // تحديث كل 0.5 ثانية كما طلبت لإصلاح النقطة الحمراء
+        // الحل الجذري للنقطة الحمراء: تحديث كل 0.5 ثانية ومقارنة ذكية
         function startGlobalSync() {
             if(globalSyncInterval) clearInterval(globalSyncInterval);
             globalSyncInterval = setInterval(async () => {
@@ -197,9 +186,8 @@
                     data.friends.forEach(f => {
                         const count = f.msgCount || 0;
                         const savedCount = msgMemory[f.phone] || 0;
-                        
-                        // تحديث النقطة الحمراء بجانب الصديق
                         const dot = document.getElementById(`dot-${f.phone}`);
+                        
                         if(count > savedCount) {
                             hasNewMsg = true;
                             if(dot) dot.style.display = 'block';
@@ -209,19 +197,15 @@
                     });
                     
                     const hasRequests = data.received && data.received.length > 0;
-                    // تحديث النقطة في القائمة الرئيسية
-                    const mainMenuDot = document.getElementById('mainMenuDot');
-                    if (mainMenuDot) {
-                        mainMenuDot.style.display = (hasNewMsg || hasRequests) ? 'block' : 'none';
-                    }
-                } catch(e) { console.log("Sync Error"); }
-            }, 500); // تحديث كل 500 ملّي ثانية
+                    document.getElementById('mainMenuDot').style.display = (hasNewMsg || hasRequests) ? 'block' : 'none';
+                } catch(e) {}
+            }, 500); // تحديث فائق السرعة لرصد الرسائل
         }
 
         function saveAndLock() {
             const n = document.getElementById('setupName').value.trim();
             const p = document.getElementById('setupPhone').value.trim();
-            if(n.length < 3 || p.length < 10) return Swal.fire('تنبيه', 'برجاء كتابة الاسم والرقم بشكل صحيح', 'warning');
+            if(n.length < 3 || p.length < 10) return Swal.fire('خطأ', 'بيانات غير صحيحة', 'error');
             localStorage.setItem('appUser', JSON.stringify({ name: n, phone: p }));
             initApp();
         }
@@ -246,7 +230,7 @@
                     const hasNew = (f.msgCount || 0) > (msgMemory[f.phone] || 0);
                     return `
                     <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px;">
-                        <b style="font-size: 17px;">${f.name}</b>
+                        <b style="font-size:17px;">${f.name}</b>
                         <div class="chat-icon-btn" onclick="openChat('${f.name}', '${f.phone}')">
                             <div id="dot-${f.phone}" class="notif-dot" style="${hasNew ? 'display:block' : 'none'}"></div>
                             <i class="fas fa-comment-dots"></i>
@@ -255,14 +239,14 @@
                 `}).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء حالياً</p>';
 
                 document.getElementById('receivedList').innerHTML = data.received.map(r => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; border-right: 4px solid var(--primary);">
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:10px; border-right: 4px solid var(--primary);">
                         <span style="flex:1;"><b>${r.name}</b></span>
                         <div style="display:flex; gap:8px;">
                             <button id="acceptBtn-${r.phone}" onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:#000; padding:8px 15px; border-radius:10px; border:none; cursor:pointer; font-weight:bold;">قبول</button>
                             <button onclick="respond('${r.phone}', 'reject')" style="background:var(--danger); color:white; padding:8px 15px; border-radius:10px; border:none; cursor:pointer;">رفض</button>
                         </div>
                     </div>
-                `).join('') || '<p style="text-align:center; opacity:0.4;">لا توجد طلبات جديدة</p>';
+                `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات</p>';
                 
                 if(syncIcon) syncIcon.classList.remove('fa-spin');
             } catch(e) { if(syncIcon) syncIcon.classList.remove('fa-spin'); }
@@ -273,10 +257,9 @@
             window.currentChatPhone = phone;
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('chatFriendName').innerText = name;
-            document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري فتح المحادثة...</div>';
+            document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري تحميل المحادثة...</div>';
             lastMsgCount = 0;
             
-            // تصفير الإشعار عند الفتح
             const dot = document.getElementById(`dot-${phone}`);
             if(dot) dot.style.display = 'none';
 
@@ -310,6 +293,10 @@
                     }).join('');
                     container.scrollTop = container.scrollHeight;
                     lastMsgCount = data.messages.length;
+                    
+                    if (data.messages[data.messages.length-1].sender !== user.phone) {
+                        try { new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3').play(); } catch(e) {}
+                    }
                 }
             } catch(e) {}
         }
@@ -330,7 +317,7 @@
 
             try {
                 await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-            } catch(e) { tempDiv.style.opacity = "0.5"; }
+            } catch(e) { tempDiv.style.background = "#8b0000"; }
         }
 
         function closeChat() {
@@ -353,7 +340,7 @@
                     document.getElementById('foundName').innerText = data.name;
                     window.searchedPhone = p;
                 } else {
-                    Swal.fire('عذراً', 'هذا الرقم غير مسجل في الساحة', 'error');
+                    Swal.fire('غير موجود', 'هذا الرقم غير مسجل حالياً', 'info');
                 }
             } catch(e) { Swal.close(); }
         }
@@ -362,19 +349,19 @@
             const btn = document.getElementById('requestBtn');
             const user = JSON.parse(localStorage.getItem('appUser'));
             btn.disabled = true;
-            btn.innerText = "جاري الطلب...";
+            btn.innerText = "جاري الإرسال...";
             try {
                 await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
-                Swal.fire('تم بنجاح', 'تم إرسال طلب الصداقة', 'success');
+                Swal.fire('تم', 'تم إرسال طلب الصداقة بنجاح', 'success');
                 document.getElementById('searchResult').style.display = 'none';
-            } catch(e) { Swal.fire('خطأ', 'حاول مرة أخرى', 'error'); }
+            } catch(e) { Swal.fire('خطأ', 'فشل الإرسال', 'error'); } 
             finally { btn.disabled = false; btn.innerText = "إرسال طلب صداقة ➕"; }
         }
 
         async function respond(phone, act) {
             const user = JSON.parse(localStorage.getItem('appUser'));
             const btn = document.getElementById(`acceptBtn-${phone}`);
-            if(act === 'accept' && btn) { btn.disabled = true; btn.innerText = "جاري القبول..."; }
+            if(act === 'accept' && btn) { btn.disabled = true; btn.innerText = "..."; }
             try {
                 await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
                 fetchFriendsData();
@@ -385,3 +372,4 @@
     </script>
 </body>
 </html>
+
