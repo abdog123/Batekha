@@ -11,7 +11,7 @@
             --primary: #3498db; --dark: #0f172a; --accent: #2ed573; 
             --card: rgba(255,255,255,0.08); --wa-bg: #0b141a;
             --wa-sent: #005c4b; --wa-received: #202c33;
-            --danger: #ff4757; --warning: #f1c40f;
+            --danger: #ff4757;
         }
         
         body { 
@@ -22,24 +22,39 @@
 
         .card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); position: relative; }
         .main-btn { background: linear-gradient(45deg, var(--primary), #2980b9); padding: 15px; border-radius: 15px; color: white; width: 100%; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; border:none; cursor:pointer; position: relative; margin-bottom: 10px;}
-        
-        .action-buttons { display: flex; gap: 8px; }
-        .chat-icon-btn, .challenge-btn {
-            position: relative; background: rgba(255,255,255,0.1);
-            width: 45px; height: 45px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s; border: none; color: white;
-        }
-        .chat-icon-btn:hover { background: var(--primary); }
-        .challenge-btn { color: var(--warning); }
-        .challenge-btn:hover { background: var(--warning); color: #000; }
+        .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .notif-dot { 
             position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; 
             background: var(--danger); border-radius: 50%; border: 2px solid #fff; 
-            display: none; z-index: 10; box-shadow: 0 0 8px var(--danger); animation: pulse-dot 1.2s infinite;
+            display: none; z-index: 10;
+            box-shadow: 0 0 8px var(--danger);
+            animation: pulse-dot 1.2s infinite;
         }
-        @keyframes pulse-dot { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        @keyframes pulse-dot {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* نظام الرسائل الجديدة */
+        .new-messages-separator {
+            display: flex; align-items: center; text-align: center; margin: 20px 0;
+            color: var(--danger); font-size: 12px; font-weight: bold;
+        }
+        .new-messages-separator::before, .new-messages-separator::after {
+            content: ''; flex: 1; border-bottom: 1px solid var(--danger); opacity: 0.5;
+        }
+        .new-messages-separator:not(:empty)::before { margin-left: .5em; }
+        .new-messages-separator:not(:empty)::after { margin-right: .5em; }
+
+        .chat-icon-btn {
+            position: relative; background: rgba(255,255,255,0.1);
+            width: 45px; height: 45px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s;
+        }
+        .chat-icon-btn:hover { background: var(--primary); }
 
         .sub-page { display: none; max-width: 500px; margin: auto; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -50,16 +65,24 @@
         .chat-header { padding: 12px 15px; background: #202c33; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
         .chat-messages { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 6px; background-color: #0b141a; }
         
-        .msg { padding: 8px 12px; border-radius: 10px; max-width: 75%; font-size: 15px; color: #e9edef; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 75%; font-size: 15px; position: relative; color: #e9edef; line-height: 1.5; }
         .msg.sent { background: var(--wa-sent); align-self: flex-start; border-top-right-radius: 0; }
         .msg.received { background: var(--wa-received); align-self: flex-end; border-top-left-radius: 0; }
         
+        .msg-info { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; margin-top: 4px; opacity: 0.7; }
+        .status-tick { font-size: 11px; }
+
         .chat-input-area { padding: 10px; display: flex; gap: 8px; background: #202c33; align-items: center; }
         #chatInput { background: #2a3942; border: none; margin: 0; flex: 1; border-radius: 25px; padding: 12px 20px; color: white; }
         .send-btn { background: #00a884; width: 45px; height: 45px; border-radius: 50%; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
+        .searching-text { text-align: center; color: var(--primary); font-size: 14px; padding: 15px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        
         .refresh-btn { background: var(--accent); color: #000; padding: 8px 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        
         .challenge-card { background: rgba(255,255,255,0.05); border-left: 4px solid var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .challenge-card:hover { background: rgba(255,255,255,0.1); transform: scale(1.02); }
     </style>
 </head>
 <body>
@@ -81,51 +104,107 @@
         
         <button class="main-btn" onclick="showSection('friendsPage')">
             <div id="mainMenuDot" class="notif-dot" style="top: 10px; right: 10px;"></div>
-            <i class="fas fa-user-friends"></i> قائمة الأصدقاء والتحديات
+            <i class="fas fa-user-friends"></i> تحدي مع صديقك
         </button>
 
         <button class="main-btn" style="background: linear-gradient(45deg, #e67e22, #d35400);" onclick="showSection('selfChallengePage')">
-            <i class="fas fa-trophy"></i> تحدي نفسك (تدريب)
+            <i class="fas fa-trophy"></i> تحدي نفسك (معكش صديق)
         </button>
 
-        <button onclick="window.location.href='dash_board.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
+        <button onclick="window.location.href='dash_boared.html'" style="background:rgba(255,255,255,0.05); border:1px solid #333; color:#ccc; margin-top:20px; width:100%; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;">
             <i class="fas fa-home"></i> العودة للمنصة الرئيسية
         </button>
+    </div>
+
+    <div id="selfChallengePage" class="sub-page">
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+            <i class="fas fa-arrow-right" onclick="showSection('mainMenu')" style="cursor:pointer; font-size:20px;"></i>
+            <h3 style="margin:0; color:var(--primary);">تحديات فردية 🏆</h3>
+        </div>
+        
+        <div class="challenge-card" onclick="startChallenge('challenge1')">
+            <b>1. تحدي سرعة الكتابة ⌨️</b>
+            <p style="font-size:12px; color:#aaa; margin:5px 0 0;">اكتب الجملة المطلوبة في أقل من 10 ثواني!</p>
+        </div>
+        <div class="challenge-card" onclick="startChallenge('challenge2')">
+            <b>2. تحدي الذاكرة البصرية 🧠</b>
+            <p style="font-size:12px; color:#aaa; margin:5px 0 0;">تذكر الأرقام التي ستظهر وتختفي بسرعة.</p>
+        </div>
+        <div class="challenge-card" onclick="startChallenge('challenge3')">
+            <b>3. تحدي الحظ العاثر 🎲</b>
+            <p style="font-size:12px; color:#aaa; margin:5px 0 0;">هل يمكنك تخمين الرقم الصحيح من 1 لـ 6؟</p>
+        </div>
+        <div class="challenge-card" onclick="startChallenge('challenge4')">
+            <b>4. تحدي النقر السريع ⚡</b>
+            <p style="font-size:12px; color:#aaa; margin:5px 0 0;">كم عدد النقرات التي يمكنك فعلها في 5 ثواني؟</p>
+        </div>
+        <div class="challenge-card" onclick="startChallenge('challenge5')">
+            <b>5. تحدي حل الألغاز 🧩</b>
+            <p style="font-size:12px; color:#aaa; margin:5px 0 0;">لغز منطقي سريع سيختبر ذكاءك.</p>
+        </div>
+        <div class="challenge-card" onclick="startChallenge('challenge6')">
+            <b>6. تحدي الألوان 🎨</b>
+            <p style="font-size:12px; color:#aaa; margin:5px 0 0;">اختر اسم اللون وليس لون الكلمة!</p>
+        </div>
     </div>
 
     <div id="friendsPage" class="sub-page">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <div onclick="showSection('mainMenu')" style="cursor:pointer; font-weight:bold;"><i class="fas fa-arrow-right"></i> رجوع</div>
-            <button class="refresh-btn" onclick="fetchFriendsData()">تحديث</button>
+            <button class="refresh-btn" onclick="fetchFriendsData()">
+                <i class="fas fa-sync-alt" id="syncIcon"></i> تحديث البيانات
+            </button>
         </div>
-        <div id="friendsList"></div>
-        <h4 style="color:var(--primary); margin-top:20px;">طلبات الصداقة</h4>
+        
+        <div class="card">
+            <h4><i class="fas fa-search"></i> ابحث عن صديق برقم الهاتف</h4>
+            <div style="display:flex; gap:8px;">
+                <input type="tel" id="friendPhone" placeholder="01xxxxxxxxx" style="margin:0;">
+                <button onclick="searchFriend()" style="background:var(--primary); padding:0 15px; border-radius:12px; border:none; color:white;"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="searchResult" style="display:none; margin-top:15px; text-align:center;">
+                <p id="foundName" style="color:var(--accent); font-weight:bold;"></p>
+                <button id="requestBtn" onclick="sendFriendRequest()" class="main-btn">إرسال طلب صداقة ➕</button>
+            </div>
+        </div>
+
+        <h4 style="color:var(--primary);">طلبات الصداقة المستلمة</h4>
         <div id="receivedList"></div>
+
+        <h4 style="color:var(--accent);">أصدقائي</h4>
+        <div id="friendsList"></div>
     </div>
 
     <div id="chatPage">
         <div class="chat-header">
             <i class="fas fa-arrow-right" onclick="closeChat()" style="cursor:pointer; font-size:20px;"></i>
-            <span id="chatFriendName" style="font-weight:bold; flex:1;">...</span>
+            <span id="chatFriendName" style="font-weight:bold; font-size:17px; flex:1;">...</span>
         </div>
         <div class="chat-messages" id="chatMsgs"></div>
         <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="اكتب رسالة...">
+            <input type="text" id="chatInput" placeholder="اكتب رسالة..." autocomplete="off">
             <button onclick="sendChatMessage()" class="send-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = "Https://script.google.com/macros/s/AKfycbxo66cbciY4-vFTyi8LG8lAtd0TvAyM0gcYUslNuuVjDnMR6RgUwOnq0e8dSGqexOb_/exec";
+        
+        let chatInterval = null;
+        let globalSyncInterval = null;
+        let lastMsgCount = 0;
         let isChatOpen = false;
+        let isFirstEntry = true; // متغير للتحكم في ظهور "NEW"
+        
         let msgMemory = JSON.parse(localStorage.getItem('msgMemory')) || {};
-        let activeChallenge = null;
+        let friendsCache = JSON.parse(localStorage.getItem('friendsCache')) || { friends: [], received: [] };
+        let chatCache = JSON.parse(localStorage.getItem('chatCache')) || {};
 
         function initApp() {
             const user = JSON.parse(localStorage.getItem('appUser'));
-            if (user) {
+            if (user && user.phone) {
                 document.getElementById('setupOverlay').style.display = 'none';
-                showSection('mainMenu');
+                showSection(localStorage.getItem('lastPage') || 'mainMenu');
                 document.getElementById('welcomeUser').innerText = `أهلاً بك، ${user.name} 🍉`;
                 startGlobalSync();
             } else {
@@ -134,124 +213,151 @@
         }
 
         function startGlobalSync() {
-            setInterval(async () => {
+            if(globalSyncInterval) clearInterval(globalSyncInterval);
+            globalSyncInterval = setInterval(async () => {
                 const user = JSON.parse(localStorage.getItem('appUser'));
-                if(!user) return;
+                if(!user || isChatOpen) return;
                 try {
                     const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
                     const data = await res.json();
                     
-                    // 1. فحص التنبيهات للدردشة والطلبات
-                    let totalNew = false;
+                    let totalNewMsgs = false;
                     data.friends.forEach(f => {
-                        if((f.msgCount || 0) > (msgMemory[f.phone] || 0)) totalNew = true;
+                        const count = f.msgCount || 0;
+                        const savedCount = msgMemory[f.phone] || 0;
+                        if(count > savedCount) totalNewMsgs = true;
+                        
+                        const dot = document.getElementById(`dot-${f.phone}`);
+                        if(dot) dot.style.display = (count > savedCount) ? 'block' : 'none';
                     });
-                    document.getElementById('mainMenuDot').style.display = (totalNew || data.received.length > 0) ? 'block' : 'none';
-
-                    // 2. فحص طلبات التحدي (ميزة السيفين)
-                    if (data.pendingChallenge && data.pendingChallenge.from !== activeChallenge) {
-                        activeChallenge = data.pendingChallenge.from;
-                        showChallengePopup(data.pendingChallenge);
-                    }
+                    
+                    const hasReq = data.received && data.received.length > 0;
+                    const mainMenuDot = document.getElementById('mainMenuDot');
+                    if(mainMenuDot) mainMenuDot.style.display = (totalNewMsgs || hasReq) ? 'block' : 'none';
+                    
                 } catch(e) {}
-            }, 3000);
-        }
-
-        // إظهار نوتفكيشن التحدي في أي مكان
-        function showChallengePopup(challenge) {
-            Swal.fire({
-                title: '🔥 طلب مبارزة ⚔️',
-                text: `يريد "${challenge.name}" تحديك الآن في ساحة الأصدقاء!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'قبول التحدي 🛡️',
-                cancelButtonText: 'هربت! 🏃',
-                confirmButtonColor: '#2ed573',
-                cancelButtonColor: '#ff4757'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "#"; // هنا تضع رابط صفحة اللعبة أو تفتح الشات
-                    Swal.fire('مستعد؟', 'سيتم تحويلك لساحة المعركة...', 'success');
-                }
-            });
-        }
-
-        // إرسال طلب تحدي (زر السيفين)
-        async function sendDuelRequest(friendPhone, friendName) {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            Swal.fire({ title: 'جاري إرسال التحدي...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            
-            try {
-                // نرسل رسالة خاصة للسيرفر لتمييزها كطلب تحدي
-                await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${friendPhone}&text=${encodeURIComponent("⚔️ أرسل لك طلب تحدي!")}&type=duel`);
-                Swal.fire('تم الإرسال!', `بانتظار رد ${friendName}...`, 'success');
-            } catch(e) {
-                Swal.fire('خطأ', 'فشل في الاتصال بالسيرفر', 'error');
-            }
-        }
-
-        function renderFriends(data) {
-            const friendsList = document.getElementById('friendsList');
-            friendsList.innerHTML = data.friends.map(f => `
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <b style="font-size:16px;">${f.name}</b>
-                    <div class="action-buttons">
-                        <button class="challenge-btn" onclick="sendDuelRequest('${f.phone}', '${f.name}')">
-                            <i class="fas fa-swords" style="font-size:20px;"></i>
-                        </button>
-                        <div class="chat-icon-btn" onclick="openChat('${f.name}', '${f.phone}')">
-                            <div id="dot-${f.phone}" class="notif-dot" style="${(f.msgCount > (msgMemory[f.phone]||0)) ? 'display:block' : 'none'}"></div>
-                            <i class="fas fa-comment-dots" style="font-size:20px;"></i>
-                        </div>
-                    </div>
-                </div>
-            `).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء بعد</p>';
-        }
-
-        // بقية الوظائف الأساسية المستقرة...
-        async function fetchFriendsData() {
-            const user = JSON.parse(localStorage.getItem('appUser'));
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
-                const data = await res.json();
-                renderFriends(data);
-                document.getElementById('receivedList').innerHTML = data.received.map(r => `
-                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <b>${r.name}</b>
-                        <button onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">قبول</button>
-                    </div>
-                `).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات جديدة</p>';
-            } catch(e) {}
+            }, 2500); 
         }
 
         function showSection(id) {
             document.querySelectorAll('.sub-page').forEach(p => p.style.display = 'none');
             document.getElementById(id).style.display = 'block';
-            if(id === 'friendsPage') fetchFriendsData();
+            localStorage.setItem('lastPage', id);
+            if(id === 'friendsPage') {
+                renderFriends(friendsCache);
+                fetchFriendsData();
+            }
+        }
+
+        function renderFriends(data) {
+            const friendsList = document.getElementById('friendsList');
+            const receivedList = document.getElementById('receivedList');
+
+            friendsList.innerHTML = data.friends.map(f => {
+                const hasNew = (f.msgCount || 0) > (msgMemory[f.phone] || 0);
+                return `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
+                    <b style="flex:1;">${f.name}</b>
+                    <div class="chat-icon-btn" onclick="openChat('${f.name}', '${f.phone}')">
+                        <div id="dot-${f.phone}" class="notif-dot" style="${hasNew ? 'display:block' : 'none'}"></div>
+                        <i class="fas fa-comment-dots" style="font-size:20px;"></i>
+                    </div>
+                </div>`;
+            }).join('') || '<p style="text-align:center; opacity:0.5;">لا يوجد أصدقاء</p>';
+
+            receivedList.innerHTML = data.received.map(r => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <span style="flex:1;"><b>${r.name}</b></span>
+                    <button id="acceptBtn-${r.phone}" onclick="respond('${r.phone}', 'accept')" style="background:var(--accent); color:black; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">قبول</button>
+                    <button id="rejectBtn-${r.phone}" onclick="respond('${r.phone}', 'reject')" style="background:var(--danger); color:white; padding:6px 15px; border-radius:8px; border:none; cursor:pointer; font-weight:bold;">رفض</button>
+                </div>`).join('') || '<p style="text-align:center; opacity:0.3;">لا توجد طلبات</p>';
+        }
+
+        async function fetchFriendsData() {
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            const syncIcon = document.getElementById('syncIcon');
+            if(syncIcon) syncIcon.classList.add('fa-spin');
+            
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getFriends&phone=${user.phone}`);
+                const data = await res.json();
+                friendsCache = data;
+                localStorage.setItem('friendsCache', JSON.stringify(data));
+                renderFriends(data);
+                if(syncIcon) syncIcon.classList.remove('fa-spin');
+            } catch(e) { if(syncIcon) syncIcon.classList.remove('fa-spin'); }
         }
 
         async function openChat(name, phone) {
             isChatOpen = true;
+            isFirstEntry = true; // تفعيل "NEW" عند أول دخول
             window.currentChatPhone = phone;
             document.getElementById('chatPage').style.display = 'flex';
             document.getElementById('chatFriendName').innerText = name;
+            
+            if (chatCache[phone]) {
+                renderMessages(chatCache[phone], true); // true تعني استخدام الكاش للمقارنة
+                lastMsgCount = chatCache[phone].length;
+            } else {
+                document.getElementById('chatMsgs').innerHTML = '<div class="searching-text">جاري التحميل...</div>';
+                lastMsgCount = 0;
+            }
+            
             loadMessages();
-            window.chatInterval = setInterval(loadMessages, 3000);
+            chatInterval = setInterval(loadMessages, 2500);
+        }
+
+        function renderMessages(messages, useCacheComparison = false) {
+            const container = document.getElementById('chatMsgs');
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            const phone = window.currentChatPhone;
+            
+            // تحديد أين يبدأ الجديد
+            let savedCount = msgMemory[phone] || 0;
+            let html = "";
+
+            messages.forEach((m, index) => {
+                const isMe = String(m.sender) === String(user.phone);
+                
+                // إضافة الخط الفاصل "NEW"
+                if (isFirstEntry && !isMe && index === savedCount && index < messages.length) {
+                    html += `<div class="new-messages-separator">NEW</div>`;
+                }
+
+                html += `
+                    <div class="msg ${isMe ? 'sent' : 'received'}">
+                        ${m.text}
+                        <div class="msg-info">
+                            <span>${m.time || ''}</span>
+                            ${isMe ? '<i class="fas fa-check status-tick"></i>' : ''}
+                        </div>
+                    </div>`;
+            });
+
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
         }
 
         async function loadMessages() {
             if(!isChatOpen) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
+            const phone = window.currentChatPhone;
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${window.currentChatPhone}`);
+                const res = await fetch(`${SCRIPT_URL}?action=getMessages&user1=${user.phone}&user2=${phone}`);
                 const data = await res.json();
-                const container = document.getElementById('chatMsgs');
-                container.innerHTML = data.messages.map(m => `
-                    <div class="msg ${m.sender == user.phone ? 'sent' : 'received'}">${m.text}</div>
-                `).join('');
-                container.scrollTop = container.scrollHeight;
-                msgMemory[window.currentChatPhone] = data.messages.length;
-                localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
+                
+                if (data.messages.length !== lastMsgCount) {
+                    renderMessages(data.messages);
+                    lastMsgCount = data.messages.length;
+                    
+                    // تحديث الكاش والذاكرة عند القراءة فقط
+                    chatCache[phone] = data.messages;
+                    msgMemory[phone] = data.messages.length;
+                    localStorage.setItem('msgMemory', JSON.stringify(msgMemory));
+                    localStorage.setItem('chatCache', JSON.stringify(chatCache));
+                    
+                    isFirstEntry = false; // إلغاء "NEW" بعد أول رؤية ناجحة
+                }
             } catch(e) {}
         }
 
@@ -260,28 +366,137 @@
             const text = inp.value.trim();
             if(!text) return;
             const user = JSON.parse(localStorage.getItem('appUser'));
+            
+            const container = document.getElementById('chatMsgs');
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'msg sent';
+            tempDiv.innerHTML = `${text}<div class="msg-info"><span>الآن</span> <i class="fas fa-clock status-tick"></i></div>`;
+            container.appendChild(tempDiv);
+            container.scrollTop = container.scrollHeight;
             inp.value = '';
+
             try {
                 await fetch(`${SCRIPT_URL}?action=sendMessage&sender=${user.phone}&receiver=${window.currentChatPhone}&text=${encodeURIComponent(text)}`);
-                loadMessages();
-            } catch(e) {}
+            } catch(e) { tempDiv.style.opacity = "0.5"; }
         }
 
         function closeChat() {
             isChatOpen = false;
             document.getElementById('chatPage').style.display = 'none';
-            clearInterval(window.chatInterval);
+            clearInterval(chatInterval);
+            fetchFriendsData();
+        }
+
+        async function respond(phone, act) {
+            const btn = document.getElementById(`${act}Btn-${phone}`);
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = act === 'accept' ? 'جاري القبول...' : 'جاري الرفض...';
+            
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            try {
+                await fetch(`${SCRIPT_URL}?action=respond&me=${user.phone}&friend=${phone}&act=${act}`);
+                fetchFriendsData();
+            } catch(e) {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
+        // نظام التحديات الفردية
+        function startChallenge(type) {
+            if(type === 'challenge1') {
+                Swal.fire({
+                    title: 'تحدي الكتابة',
+                    text: 'اكتب: "ساحة الأصدقاء هي الأفضل"',
+                    input: 'text',
+                    timer: 10000,
+                    timerProgressBar: true,
+                    showCancelButton: true
+                }).then(res => {
+                    if(res.value === "ساحة الأصدقاء هي الأفضل") Swal.fire('ممتاز!', 'سرعتك رائعة', 'success');
+                });
+            } else if(type === 'challenge2') {
+                let num = Math.floor(1000 + Math.random() * 9000);
+                Swal.fire({ title: 'تذكر الرقم!', text: num, timer: 1500, showConfirmButton: false }).then(() => {
+                    Swal.fire({ title: 'ما هو الرقم؟', input: 'number' }).then(res => {
+                        if(res.value == num) Swal.fire('بطل!', 'ذاكرتك قوية', 'success');
+                        else Swal.fire('خطأ', 'حاول مرة أخرى', 'error');
+                    });
+                });
+            } else if(type === 'challenge3') {
+                Swal.fire({ title: 'خمن الرقم (1-6)', input: 'select', inputOptions: {1:1,2:2,3:3,4:4,5:5,6:6} }).then(res => {
+                    let lucky = Math.floor(Math.random()*6)+1;
+                    if(res.value == lucky) Swal.fire('يا لعيب!', 'حظك ذهب', 'success');
+                    else Swal.fire('حظ أوفر', 'الرقم كان '+lucky, 'info');
+                });
+            } else if(type === 'challenge4') {
+                let clicks = 0;
+                Swal.fire({
+                    title: 'انقر بسرعة!',
+                    html: '<button id="clicker" class="main-btn">اضغط هنا!</button>',
+                    timer: 5000,
+                    didOpen: () => {
+                        document.getElementById('clicker').onclick = () => clicks++;
+                    }
+                }).then(() => Swal.fire('النتيجة', `لقد نقرت ${clicks} مرات!`, 'info'));
+            } else if(type === 'challenge5') {
+                Swal.fire({ title: 'لغز', text: 'ما هو الشيء الذي ينبض بلا قلب؟', input: 'text' }).then(res => {
+                    if(res.value.includes('ساعة')) Swal.fire('ذكي!', 'إجابة صحيحة', 'success');
+                    else Swal.fire('فكر أكثر', 'الإجابة هي الساعة', 'info');
+                });
+            } else if(type === 'challenge6') {
+                Swal.fire({
+                    title: 'تحدي الألوان',
+                    text: 'اختر اسم اللون المكتوب وليس لونه الفعلي',
+                    html: '<b style="color:red; font-size:30px;">أخضر</b>',
+                    showDenyButton: true,
+                    confirmButtonText: 'أخضر',
+                    denyButtonText: 'أحمر'
+                }).then(res => {
+                    if(res.isConfirmed) Swal.fire('تركيز عالي!', '', 'success');
+                    else Swal.fire('تسرعت!', '', 'error');
+                });
+            }
         }
 
         function saveAndLock() {
             const n = document.getElementById('setupName').value.trim();
             const p = document.getElementById('setupPhone').value.trim();
-            if(n.length >= 3 && p.length >= 10) {
-                localStorage.setItem('appUser', JSON.stringify({name: n, phone: p}));
-                initApp();
-            } else {
-                Swal.fire('خطأ', 'يرجى إدخال بيانات صحيحة', 'error');
-            }
+            if(n.length < 3 || p.length < 10) return Swal.fire('خطأ', 'بيانات غير صحيحة', 'error');
+            localStorage.setItem('appUser', JSON.stringify({ name: n, phone: p }));
+            initApp();
+        }
+
+        async function searchFriend() {
+            const p = document.getElementById('friendPhone').value.trim();
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            if(!p || p === user.phone) return Swal.fire('مرحباً!', 'لا يمكنك إضافة نفسك 😂', 'info');
+            Swal.showLoading();
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=search&phone=${p}`);
+                const data = await res.json();
+                Swal.close();
+                if(data.found) {
+                    document.getElementById('searchResult').style.display = 'block';
+                    document.getElementById('foundName').innerText = data.name;
+                    window.searchedPhone = p;
+                } else { Swal.fire('غير موجود', 'الرقم غير مسجل', 'info'); }
+            } catch(e) { Swal.close(); }
+        }
+
+        async function sendFriendRequest() {
+            const btn = document.getElementById('requestBtn');
+            const user = JSON.parse(localStorage.getItem('appUser'));
+            btn.disabled = true;
+            btn.innerText = "جاري الإرسال...";
+            try {
+                await fetch(`${SCRIPT_URL}?action=request&from=${user.phone}&to=${window.searchedPhone}`);
+                Swal.fire('تم', 'تم إرسال الطلب', 'success');
+                document.getElementById('searchResult').style.display = 'none';
+                fetchFriendsData();
+            } catch(e) { Swal.fire('خطأ', 'فشل الإرسال', 'error'); } 
+            finally { btn.disabled = false; btn.innerText = "إرسال طلب صداقة ➕"; }
         }
 
         initApp();
